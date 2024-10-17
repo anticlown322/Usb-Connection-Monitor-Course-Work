@@ -13,5 +13,45 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Core">
+      <UniqueIdentifier>{326120c3-6f96-494c-8ee8-da38184a2f56}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UI">
+      <UniqueIdentifier>{ce34ca32-ec49-4721-b472-616c11735802}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Algs">
+      <UniqueIdentifier>{7e1c6c38-ddfb-4f86-95c6-02f46a6ba1f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Core">
+      <UniqueIdentifier>{53da8b01-545c-4e36-87f0-73b28a825298}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\UI">
+      <UniqueIdentifier>{f30b8265-f8ee-4ce7-bc01-195c4a4d533a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Algs">
+      <UniqueIdentifier>{56b71f94-527d-426b-adc8-aec7e0a67c2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\App">
+      <UniqueIdentifier>{19a3b4cc-4ee7-4808-b812-aaa90412cbec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\App">
+      <UniqueIdentifier>{44423e01-8a5f-4593-98fd-5899dd317192}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Entry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="App.cpp">
+      <Filter>Source Files\App</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="App.h">
+      <Filter>Header Files\App</Filter>
+    </ClInclude>
+    <ClInclude Include="general.h">
+      <Filter>Header Files\App</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
