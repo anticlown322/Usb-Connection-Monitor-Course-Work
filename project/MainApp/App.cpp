@@ -124,6 +124,9 @@ LRESULT MyApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     RECT clientArea;
     GetClientRect(hwnd, &clientArea);
 
+    RECT windowArea;
+    GetWindowRect(hwnd, &windowArea);
+
     switch (message)
     {
         case WM_CREATE:
@@ -140,30 +143,41 @@ LRESULT MyApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
                 /* paint gradient background */
                 Gdiplus::LinearGradientBrush linGrBrush(
-                    Gdiplus::Point(static_cast<int>(clientArea.left), 
-                                   static_cast<int>(clientArea.top)),
-                    Gdiplus::Point(static_cast<int>(clientArea.right - clientArea.left), 
-                                   static_cast<int>(clientArea.bottom - clientArea.top)),
+                    Gdiplus::Point(static_cast<int>(clientArea.left),
+                        static_cast<int>(clientArea.top)),
+                    Gdiplus::Point(static_cast<int>(clientArea.right),
+                        static_cast<int>(clientArea.bottom)),
                     Gdiplus::Color(255, 255, 0, 0), // Opaque red
                     Gdiplus::Color(255, 0, 0, 255) // Opaque blue
-                );  
-                
+                );
+
                 linGrBrush.SetGammaCorrection(TRUE);
                 graphics.FillRectangle(
-                    &linGrBrush, 
+                    &linGrBrush,
                     static_cast<int>(clientArea.left),
                     static_cast<int>(clientArea.top),
                     static_cast<int>(clientArea.right - clientArea.left),
                     static_cast<int>(clientArea.bottom - clientArea.top)
                 );
-                
+
+
                 EndPaint(hwnd, &paintStruct);
             }
             return 0;
 
         case WM_SIZE:
             {
-
+                /* rounded corners */
+                HRGN hRgn = CreateRoundRectRgn( // calculating from window (0, 0) 
+                    0,
+                    0, 
+                    windowArea.right - windowArea.left,
+                    windowArea.bottom - windowArea.top,
+                    30,
+                    30
+                );
+                SetWindowRgn(hwnd, hRgn, TRUE);
+                DeleteObject(hRgn);
             }
             return 0;
 
