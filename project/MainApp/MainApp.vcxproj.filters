@@ -22,9 +22,6 @@
     <Filter Include="Source Files\Algs">
       <UniqueIdentifier>{7e1c6c38-ddfb-4f86-95c6-02f46a6ba1f6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Core">
-      <UniqueIdentifier>{53da8b01-545c-4e36-87f0-73b28a825298}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\UI">
       <UniqueIdentifier>{f30b8265-f8ee-4ce7-bc01-195c4a4d533a}</UniqueIdentifier>
     </Filter>
@@ -36,6 +33,9 @@
     </Filter>
     <Filter Include="Source Files\App">
       <UniqueIdentifier>{44423e01-8a5f-4593-98fd-5899dd317192}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Core Types">
+      <UniqueIdentifier>{53da8b01-545c-4e36-87f0-73b28a825298}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -54,7 +54,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="basewin.h">
-      <Filter>Header Files\Core</Filter>
+      <Filter>Header Files\Core Types</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
