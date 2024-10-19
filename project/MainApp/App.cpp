@@ -1,5 +1,5 @@
 #include "general.h"
-#include "basewin.h"
+#include "baseWindow.h"
 #include "App.h"
 
 HRESULT MainWindow::CreateGraphicsResources()
@@ -165,6 +165,12 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         case WM_SIZE:
             Resize();
+            return 0;
+
+        case WM_LBUTTONDOWN:
+            {
+                SendMessage(m_hwnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, 0);
+            }
             return 0;
     }
 
