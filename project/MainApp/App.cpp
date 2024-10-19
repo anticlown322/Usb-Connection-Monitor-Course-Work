@@ -1,4 +1,5 @@
 #include "general.h"
+#include "resource.h"
 #include "App.h"
 
 MyApp::MyApp()
@@ -29,8 +30,8 @@ void MyApp::InitWindow()
     windowClass.cbWndExtra = 0;
     windowClass.hbrBackground = reinterpret_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
     windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    windowClass.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
     windowClass.hInstance = GetModuleHandle(nullptr);
+    windowClass.hIcon = LoadIcon(windowClass.hInstance, MAKEINTRESOURCE(IDI_ICON1));
     windowClass.lpfnWndProc = MyApp::AppProc;
     windowClass.lpszClassName = MyApp::className;
     windowClass.lpszMenuName = nullptr;
@@ -40,28 +41,15 @@ void MyApp::InitWindow()
     if (!RegisterClass(&windowClass)) // window
         throw std::runtime_error("Error! Can't register main window class");
 
-    /* changing client area */
-    RECT windowRect{
-        0,
-        0,
-        this->startWindowWidth,
-        this->startWindowHeight
-    };
-    AdjustWindowRect(
-        &windowRect,
-        WS_OVERLAPPEDWINDOW,
-        false
-    );
-
     /* creating main window */
     this->handler = CreateWindow(
         MyApp::className,
         MyApp::appName,
-        WS_OVERLAPPEDWINDOW,
-        (SCREEN_WIDTH - windowRect.right) / 2,
-        (SCREEN_HEIGHT - windowRect.bottom) / 2,
-        windowRect.right,
-        windowRect.bottom,
+        WS_POPUP | WS_VISIBLE, //borderless window
+        (SCREEN_WIDTH - this->startWindowWidth) / 2,
+        (SCREEN_HEIGHT - this->startWindowHeight) / 2,
+        this->startWindowWidth,
+        this->startWindowHeight,
         nullptr,
         nullptr,
         nullptr,
@@ -129,6 +117,9 @@ LRESULT MyApp::AppProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 LRESULT MyApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    RECT clientArea;
+    GetClientRect(hwnd, &clientArea);
+
     switch (message)
     {
         case WM_CREATE:
@@ -139,21 +130,24 @@ LRESULT MyApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         case WM_PAINT:
             {
-                PAINTSTRUCT ps;
-                HDC hdc = BeginPaint(hwnd, &ps);
+                PAINTSTRUCT paintStruct;
+                HDC hDevContext = BeginPaint(hwnd, &paintStruct);
 
-                FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
+                /* paint gradient background */
+                TRIVERTEX vert[2] = {
+                    {clientArea.left, clientArea.top, 0, 0xFFFF, 0, 0 },
+                    {clientArea.right, clientArea.bottom, 0xFFFF, 0, 0, 0}
+                };
+                GRADIENT_RECT gradRect[1] = { 0, 1 };
+                GradientFill(hDevContext, vert, 2, &gradRect, 1, GRADIENT_FILL_RECT_H);
 
-                EndPaint(hwnd, &ps);
+                EndPaint(hwnd, &paintStruct);
             }
             return 0;
 
         case WM_SIZE:
             {
-                RECT clientArea;
-                GetClientRect(hwnd, &clientArea);
 
-                
             }
             return 0;
 
@@ -163,7 +157,7 @@ LRESULT MyApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_COMMAND:
             switch (LOWORD(wParam))
             {
-                
+
             }
             return 0;
 

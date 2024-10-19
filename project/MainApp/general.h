@@ -14,6 +14,9 @@
 #define UNICODE
 #endif
 
+enum class MENU_ID {
+};
+
 /* Utility */
 #include <string>
 
@@ -21,11 +24,9 @@
 #define SCREEN_WIDTH  GetSystemMetrics(SM_CXSCREEN)
 #define SCREEN_HEIGHT GetSystemMetrics(SM_CYSCREEN)
 
-#include <windows.h>
-#include <windowsx.h>
-#include <CommCtrl.h>
-
-enum class MENU_ID {
-};
+#include <Windows.h>
+#include <wingdi.h>
+//#include <windowsx.h>
+//#include <CommCtrl.h>
 
 #endif // GENERAL_H
