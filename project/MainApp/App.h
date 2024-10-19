@@ -20,6 +20,9 @@ private:
     //fields
     HWND handler;
 
+    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+    ULONG_PTR gdiplusToken;
+
     //static fields
     static constexpr const wchar_t* appName = L"USB Monitor";
     static constexpr const wchar_t* className = L"MyAppWindowClass";

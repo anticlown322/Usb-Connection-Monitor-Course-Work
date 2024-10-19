@@ -25,8 +25,7 @@ enum class MENU_ID {
 #define SCREEN_HEIGHT GetSystemMetrics(SM_CYSCREEN)
 
 #include <Windows.h>
-#include <wingdi.h>
-//#include <windowsx.h>
-//#include <CommCtrl.h>
+#include <gdiplus.h>
+#include <gdiplusinit.h>
 
 #endif // GENERAL_H

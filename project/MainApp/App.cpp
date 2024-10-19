@@ -37,6 +37,9 @@ void MyApp::InitWindow()
     windowClass.lpszMenuName = nullptr;
     windowClass.style = CS_VREDRAW | CS_HREDRAW;
 
+    /* GDI+ initialization*/
+    Gdiplus::GdiplusStartup(&this->gdiplusToken, &this->gdiplusStartupInput, NULL);
+
     /* register classes */
     if (!RegisterClass(&windowClass)) // window
         throw std::runtime_error("Error! Can't register main window class");
@@ -77,6 +80,7 @@ int MyApp::Run()
         DispatchMessage(&message);
     }
 
+    Gdiplus::GdiplusShutdown(gdiplusToken);//free gdi+ object
     return static_cast<int>(message.wParam);
 }
 
@@ -132,15 +136,27 @@ LRESULT MyApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             {
                 PAINTSTRUCT paintStruct;
                 HDC hDevContext = BeginPaint(hwnd, &paintStruct);
+                Gdiplus::Graphics graphics(hDevContext);
 
                 /* paint gradient background */
-                TRIVERTEX vert[2] = {
-                    {clientArea.left, clientArea.top, 0, 0xFFFF, 0, 0 },
-                    {clientArea.right, clientArea.bottom, 0xFFFF, 0, 0, 0}
-                };
-                GRADIENT_RECT gradRect[1] = { 0, 1 };
-                GradientFill(hDevContext, vert, 2, &gradRect, 1, GRADIENT_FILL_RECT_H);
-
+                Gdiplus::LinearGradientBrush linGrBrush(
+                    Gdiplus::Point(static_cast<int>(clientArea.left), 
+                                   static_cast<int>(clientArea.top)),
+                    Gdiplus::Point(static_cast<int>(clientArea.right - clientArea.left), 
+                                   static_cast<int>(clientArea.bottom - clientArea.top)),
+                    Gdiplus::Color(255, 255, 0, 0), // Opaque red
+                    Gdiplus::Color(255, 0, 0, 255) // Opaque blue
+                );  
+                
+                linGrBrush.SetGammaCorrection(TRUE);
+                graphics.FillRectangle(
+                    &linGrBrush, 
+                    static_cast<int>(clientArea.left),
+                    static_cast<int>(clientArea.top),
+                    static_cast<int>(clientArea.right - clientArea.left),
+                    static_cast<int>(clientArea.bottom - clientArea.top)
+                );
+                
                 EndPaint(hwnd, &paintStruct);
             }
             return 0;
