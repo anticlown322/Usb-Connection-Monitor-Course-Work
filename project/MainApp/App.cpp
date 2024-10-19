@@ -1,209 +1,124 @@
 #include "general.h"
-#include "resource.h"
 #include "App.h"
 
-MyApp::MyApp()
+HRESULT MainWindow::CreateGraphicsResources()
 {
-    try
+    HRESULT hResult = S_OK;
+
+    if (pRenderTarget == NULL)
     {
-        this->InitWindow();
-        this->CreateControls();
-    }
-    catch (const std::exception& exception)
-    {
-        std::string exceptionData = exception.what();
-        MessageBox(
-            nullptr,
-            std::wstring(begin(exceptionData), end(exceptionData)).c_str(),
-            L"Error!",
-            MB_ICONERROR | MB_OK
+        RECT clientRect;
+        GetClientRect(m_hwnd, &clientRect);
+
+        D2D1_SIZE_U size = D2D1::SizeU(clientRect.right, clientRect.bottom);
+
+        hResult = pFactory->CreateHwndRenderTarget(
+            D2D1::RenderTargetProperties(),
+            D2D1::HwndRenderTargetProperties(m_hwnd, size),
+            &pRenderTarget
         );
-        ExitProcess(EXIT_FAILURE);
-    }
-}
 
-void MyApp::InitWindow()
-{
-    /* init main window */
-    WNDCLASS windowClass = { 0 };
-    windowClass.cbClsExtra = 0;
-    windowClass.cbWndExtra = 0;
-    windowClass.hbrBackground = reinterpret_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
-    windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    windowClass.hInstance = GetModuleHandle(nullptr);
-    windowClass.hIcon = LoadIcon(windowClass.hInstance, MAKEINTRESOURCE(IDI_ICON1));
-    windowClass.lpfnWndProc = MyApp::AppProc;
-    windowClass.lpszClassName = MyApp::className;
-    windowClass.lpszMenuName = nullptr;
-    windowClass.style = CS_VREDRAW | CS_HREDRAW;
-
-    /* GDI+ initialization*/
-    Gdiplus::GdiplusStartup(&this->gdiplusToken, &this->gdiplusStartupInput, NULL);
-
-    /* register classes */
-    if (!RegisterClass(&windowClass)) // window
-        throw std::runtime_error("Error! Can't register main window class");
-
-    /* creating main window */
-    this->handler = CreateWindow(
-        MyApp::className,
-        MyApp::appName,
-        WS_POPUP | WS_VISIBLE, //borderless window
-        (SCREEN_WIDTH - this->startWindowWidth) / 2,
-        (SCREEN_HEIGHT - this->startWindowHeight) / 2,
-        this->startWindowWidth,
-        this->startWindowHeight,
-        nullptr,
-        nullptr,
-        nullptr,
-        this
-    );
-
-    if (!this->handler)
-        throw std::runtime_error("Error! Can't create main window");
-}
-
-void MyApp::CreateControls()
-{
-
-}
-
-int MyApp::Run()
-{
-    ShowWindow(this->handler, SW_SHOWDEFAULT);
-    UpdateWindow(this->handler);
-
-    MSG message{};
-    while (GetMessage(&message, nullptr, 0, 0))
-    {
-        TranslateMessage(&message);
-        DispatchMessage(&message);
-    }
-
-    Gdiplus::GdiplusShutdown(gdiplusToken);//free gdi+ object
-    return static_cast<int>(message.wParam);
-}
-
-MyApp::~MyApp()
-{
-}
-
-LRESULT MyApp::AppProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    MyApp* pApp;
-
-    /* get pApp value */
-    if (message == WM_NCCREATE)
-    {
-        pApp = static_cast<MyApp*>(reinterpret_cast<CREATESTRUCT*>(lParam)->lpCreateParams);
-        SetLastError(0);
-
-        if (!SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pApp)))
+        if (SUCCEEDED(hResult))
         {
-            if (GetLastError() != 0)
-                return false;
+            //creation
+
+            if (SUCCEEDED(hResult))
+            {
+                //first usage
+            }
         }
     }
-    else
-    {
-        pApp = reinterpret_cast<MyApp*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-    }
 
-    /* process message  */
-    if (pApp)
-    {
-        pApp->handler = hwnd;
-        return pApp->WndProc(hwnd, message, wParam, lParam);
-    }
-
-    return DefWindowProc(hwnd, message, wParam, lParam);
+    return hResult;
 }
 
-LRESULT MyApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+void MainWindow::DiscardGraphicsResources()
 {
-    RECT clientArea;
-    GetClientRect(hwnd, &clientArea);
+    SafeRelease(&pRenderTarget);
+}
 
-    RECT windowArea;
-    GetWindowRect(hwnd, &windowArea);
+void MainWindow::OnPaint()
+{
+    HRESULT hResult = CreateGraphicsResources();
 
-    switch (message)
+    if (SUCCEEDED(hResult))
+    {
+        PAINTSTRUCT paintStruct;
+        BeginPaint(m_hwnd, &paintStruct);
+        pRenderTarget->BeginDraw();
+
+        pRenderTarget->Clear(D2D1::ColorF(D2D1::ColorF::SkyBlue));
+
+        hResult = pRenderTarget->EndDraw();
+        if (FAILED(hResult) || hResult == D2DERR_RECREATE_TARGET)
+        {
+            DiscardGraphicsResources();
+        }
+        EndPaint(m_hwnd, &paintStruct);
+    }
+}
+
+void MainWindow::Resize()
+{
+    if (pRenderTarget != NULL)
+    {
+        RECT clientRect;
+        GetClientRect(m_hwnd, &clientRect);
+
+        D2D1_SIZE_U size = D2D1::SizeU(clientRect.right, clientRect.bottom);
+
+        pRenderTarget->Resize(size);
+        InvalidateRect(m_hwnd, NULL, FALSE);
+    }
+}
+
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow)
+{
+    MainWindow win;
+
+    if (!win.Create(L"Circle", WS_OVERLAPPEDWINDOW))
+    {
+        return 0;
+    }
+
+    ShowWindow(win.Window(), nCmdShow);
+
+    MSG msg = { };
+    while (GetMessage(&msg, NULL, 0, 0))
+    {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    return 0;
+}
+
+LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    switch (uMsg)
     {
         case WM_CREATE:
+            if (FAILED(D2D1CreateFactory(
+                D2D1_FACTORY_TYPE_SINGLE_THREADED, &pFactory)))
             {
-
-            }
-            return 0;
-
-        case WM_PAINT:
-            {
-                PAINTSTRUCT paintStruct;
-                HDC hDevContext = BeginPaint(hwnd, &paintStruct);
-                Gdiplus::Graphics graphics(hDevContext);
-
-                /* paint gradient background */
-                Gdiplus::LinearGradientBrush linGrBrush(
-                    Gdiplus::Point(static_cast<int>(clientArea.left),
-                        static_cast<int>(clientArea.top)),
-                    Gdiplus::Point(static_cast<int>(clientArea.right),
-                        static_cast<int>(clientArea.bottom)),
-                    Gdiplus::Color(255, 255, 0, 0), // Opaque red
-                    Gdiplus::Color(255, 0, 0, 255) // Opaque blue
-                );
-
-                linGrBrush.SetGammaCorrection(TRUE);
-                graphics.FillRectangle(
-                    &linGrBrush,
-                    static_cast<int>(clientArea.left),
-                    static_cast<int>(clientArea.top),
-                    static_cast<int>(clientArea.right - clientArea.left),
-                    static_cast<int>(clientArea.bottom - clientArea.top)
-                );
-
-
-                EndPaint(hwnd, &paintStruct);
-            }
-            return 0;
-
-        case WM_SIZE:
-            {
-                /* rounded corners */
-                HRGN hRgn = CreateRoundRectRgn( // calculating from window (0, 0) 
-                    0,
-                    0, 
-                    windowArea.right - windowArea.left,
-                    windowArea.bottom - windowArea.top,
-                    30,
-                    30
-                );
-                SetWindowRgn(hwnd, hRgn, TRUE);
-                DeleteObject(hRgn);
-            }
-            return 0;
-
-        case WM_KEYDOWN:
-            return 0;
-
-        case WM_COMMAND:
-            switch (LOWORD(wParam))
-            {
-
-            }
-            return 0;
-
-        case WM_CLOSE:
-            {
-                DestroyWindow(hwnd);
+                return -1;  // Fail CreateWindowEx.
             }
             return 0;
 
         case WM_DESTROY:
-            {
-                PostQuitMessage(0);
-            }
+            DiscardGraphicsResources();
+            SafeRelease(&pFactory);
+            PostQuitMessage(0);
             return 0;
 
-        default:
-            return DefWindowProc(hwnd, message, wParam, lParam);
+        case WM_PAINT:
+            OnPaint();
+            return 0;
+
+        case WM_SIZE:
+            Resize();
+            return 0;
     }
+
+    return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
 }
