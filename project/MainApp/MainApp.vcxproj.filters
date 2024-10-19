@@ -53,7 +53,7 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="basewin.h">
+    <ClInclude Include="baseWindow.h">
       <Filter>Header Files\Core Types</Filter>
     </ClInclude>
   </ItemGroup>

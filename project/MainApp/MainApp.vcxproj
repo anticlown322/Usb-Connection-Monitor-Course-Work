@@ -132,7 +132,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
-    <ClInclude Include="basewin.h" />
+    <ClInclude Include="baseWindow.h" />
     <ClInclude Include="general.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>

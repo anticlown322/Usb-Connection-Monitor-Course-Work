@@ -18,6 +18,7 @@ public:
         {
             pThis = (DERIVED_TYPE*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
         }
+
         if (pThis)
         {
             return pThis->HandleMessage(uMsg, wParam, lParam);
@@ -42,17 +43,20 @@ public:
         HMENU hMenu = 0
     )
     {
-        WNDCLASS wc = { 0 };
+        WNDCLASS windowClass = { 0 };
 
-        wc.lpfnWndProc = DERIVED_TYPE::WindowProc;
-        wc.hInstance = GetModuleHandle(NULL);
-        wc.lpszClassName = ClassName();
+        windowClass.lpfnWndProc = DERIVED_TYPE::WindowProc;
+        windowClass.hInstance = GetModuleHandle(NULL);
+        windowClass.lpszClassName = ClassName();
 
-        RegisterClass(&wc);
+        RegisterClass(&windowClass);
 
         m_hwnd = CreateWindowEx(
-            dwExStyle, ClassName(), lpWindowName, dwStyle, x, y,
-            nWidth, nHeight, hWndParent, hMenu, GetModuleHandle(NULL), this
+            dwExStyle, 
+            ClassName(), lpWindowName, 
+            dwStyle, 
+            x, y, nWidth, nHeight, 
+            hWndParent, hMenu, GetModuleHandle(NULL), this
         );
 
         SetLayeredWindowAttributes(m_hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY); //for transparency
