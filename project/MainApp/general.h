@@ -35,6 +35,5 @@ template <class T> void SafeRelease(T** ppT)
 
 #include <Windows.h>
 #include <d2d1.h>
-#include "basewin.h"
 
 #endif // GENERAL_H

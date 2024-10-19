@@ -55,6 +55,8 @@ public:
             nWidth, nHeight, hWndParent, hMenu, GetModuleHandle(NULL), this
         );
 
+        SetLayeredWindowAttributes(m_hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY); //for transparency
+
         return (m_hwnd ? TRUE : FALSE);
     }
 
