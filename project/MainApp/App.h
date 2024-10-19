@@ -1,33 +1,24 @@
 #ifndef MY_APP_CLASS
 #define MY_APP_CLASS
 
-class MyApp
+class MainWindow : public BaseWindow<MainWindow>
 {
+    ID2D1Factory* pFactory;
+    ID2D1HwndRenderTarget* pRenderTarget;
+
+    HRESULT CreateGraphicsResources();
+    void    DiscardGraphicsResources();
+    void    OnPaint();
+    void    Resize();
+
 public:
-    //funcs
-    explicit MyApp();
-    ~MyApp();
-    int Run();
 
-private:
-    //funcs 
-    static LRESULT CALLBACK AppProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
-    LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+    MainWindow() : pFactory(NULL), pRenderTarget(NULL)
+    {
+    }
 
-    void InitWindow();
-    void CreateControls();
-
-    //fields
-    HWND handler;
-
-    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-    ULONG_PTR gdiplusToken;
-
-    //static fields
-    static constexpr const wchar_t* appName = L"USB Monitor";
-    static constexpr const wchar_t* className = L"MyAppWindowClass";
-    static const int startWindowWidth = 800;
-    static const int startWindowHeight = 600;
+    PCWSTR  ClassName() const { return L"Circle Window Class"; }
+    LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 #endif // MY_APP_CLASS
