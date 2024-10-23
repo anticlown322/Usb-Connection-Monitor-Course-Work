@@ -15,6 +15,8 @@
 #endif
 
 enum class MENU_ID {
+    CLOSE_BUTTON = 10,
+    MINIMIZE_BUTTON
 };
 
 /* Utility */

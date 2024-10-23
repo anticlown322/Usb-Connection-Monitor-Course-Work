@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\Core">
-      <UniqueIdentifier>{326120c3-6f96-494c-8ee8-da38184a2f56}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\UI">
       <UniqueIdentifier>{ce34ca32-ec49-4721-b472-616c11735802}</UniqueIdentifier>
     </Filter>
@@ -37,6 +34,9 @@
     <Filter Include="Header Files\Core Types">
       <UniqueIdentifier>{53da8b01-545c-4e36-87f0-73b28a825298}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Core Types">
+      <UniqueIdentifier>{326120c3-6f96-494c-8ee8-da38184a2f56}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp">
@@ -44,6 +44,9 @@
     </ClCompile>
     <ClCompile Include="Entry.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="myCircleButton.cpp">
+      <Filter>Source Files\UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -55,6 +58,9 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="myCircleButton.h">
+      <Filter>Header Files\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
