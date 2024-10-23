@@ -36,6 +36,8 @@ int MyApp::Run()
         DispatchMessage(&message);
     }
 
+    Gdiplus::GdiplusShutdown(gdiplusToken);//free gdi+ object
+
     return static_cast<int>(message.wParam);
 }
 
@@ -70,6 +72,9 @@ LRESULT MyApp::AppProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 void MyApp::InitWindow()
 {
+    /* GDI+ initialization*/
+    Gdiplus::GdiplusStartup(&this->gdiplusToken, &this->gdiplusStartupInput, NULL);
+
     /* init main window */
     WNDCLASS windowClass = { 0 };
 
@@ -94,7 +99,7 @@ void MyApp::InitWindow()
     this->handler = CreateWindowEx(
         WS_EX_LAYERED, //for transparent d2d1 clear
         MyApp::className,
-        MyApp::appName, 
+        MyApp::appName,
         WS_POPUP | WS_EX_TOPMOST, //borderless window
         (SCREEN_WIDTH - this->startWindowWidth) / 2,
         (SCREEN_HEIGHT - this->startWindowHeight) / 2,
@@ -118,30 +123,35 @@ void MyApp::CreateControls()
     GetClientRect(handler, &clientRect);
 
     /* top menu buttons */
-    const D2D1_COLOR_F closeButtonFillColor = D2D1::ColorF(D2D1::ColorF::DarkRed, 1.0f);
-    const D2D1_COLOR_F minimizeButtonFillColor = D2D1::ColorF(D2D1::ColorF::ForestGreen, 1.0f);
-    const D2D1_COLOR_F buttonBorderColor = D2D1::ColorF(D2D1::ColorF::Black, 1.0f);
+    Gdiplus::Color darkRedColor(245, 66, 108);
+    Gdiplus::Color darkYellowColor(217, 201, 63);
+    Gdiplus::Color darkGreenColor(107, 217, 52);
 
     closeButton = new MyCircleButton(
         this->handler,
-        this->pFactory,
         (int)MENU_ID::CLOSE_BUTTON,
-        clientRect.right - TOP_MENU_BTN_RADIUS - 20,
-        20,
+        clientRect.right - (TOP_MENU_BTN_RADIUS + TOP_MENU_BTN_GAP),
+        TOP_MENU_BTN_Y,
         TOP_MENU_BTN_RADIUS,
-        closeButtonFillColor,
-        buttonBorderColor
+        darkRedColor
     );
-    
+
     minimizeButton = new MyCircleButton(
         this->handler,
-        this->pFactory,
         (int)MENU_ID::MINIMIZE_BUTTON,
-        clientRect.right - TOP_MENU_BTN_RADIUS * 2 - 20 * 2,
-        20,
+        clientRect.right - (TOP_MENU_BTN_RADIUS + TOP_MENU_BTN_GAP) * 2,
+        TOP_MENU_BTN_Y,
         TOP_MENU_BTN_RADIUS,
-        minimizeButtonFillColor,
-        buttonBorderColor
+        darkYellowColor
+    );
+
+    new MyCircleButton(
+        this->handler,
+        (int)MENU_ID::MAXIMIZE_BUTTON,
+        clientRect.right - (TOP_MENU_BTN_RADIUS + TOP_MENU_BTN_GAP) * 3,
+        TOP_MENU_BTN_Y,
+        TOP_MENU_BTN_RADIUS,
+        darkGreenColor
     );
 }
 
@@ -276,7 +286,7 @@ void MyApp::OnPaint()
     }
 }
 
-void MyApp::Resize()
+void MyApp::OnSize()
 {
     if (pRenderTarget != NULL)
     {
@@ -287,6 +297,35 @@ void MyApp::Resize()
 
         pRenderTarget->Resize(size);
         InvalidateRect(handler, NULL, FALSE);
+    }
+}
+
+void MyApp::OnLBtnDown()
+{
+    SendMessage(handler, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, 0);
+}
+
+void MyApp::OnCommand(WPARAM menuId)
+{
+    switch (LOWORD(menuId))
+    {
+        case (int)MENU_ID::CLOSE_BUTTON:
+            {
+                DestroyWindow(handler);
+            }
+            break;
+
+        case (int)MENU_ID::MINIMIZE_BUTTON:
+            {
+                ShowWindow(handler, SW_MINIMIZE);
+            }
+            break;
+
+        case (int)MENU_ID::MAXIMIZE_BUTTON:
+            {
+                ShowWindow(handler, SW_MAXIMIZE);
+            }
+            break;
     }
 }
 
@@ -314,13 +353,15 @@ LRESULT MyApp::WndProc(UINT message, WPARAM wParam, LPARAM lParam)
             return 0;
 
         case WM_SIZE:
-            Resize();
+            OnSize();
             return 0;
 
         case WM_LBUTTONDOWN:
-            {
-                SendMessage(handler, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, 0);
-            }
+            OnLBtnDown();
+            return 0;
+
+        case WM_COMMAND:
+            OnCommand(LOWORD(wParam));
             return 0;
 
         default:
