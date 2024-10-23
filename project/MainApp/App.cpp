@@ -72,6 +72,7 @@ void MyApp::InitWindow()
 {
     /* init main window */
     WNDCLASS windowClass = { 0 };
+
     windowClass.cbClsExtra = 0;
     windowClass.cbWndExtra = 0;
     windowClass.hbrBackground = reinterpret_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
@@ -86,6 +87,8 @@ void MyApp::InitWindow()
     /* register classes */
     if (!RegisterClass(&windowClass)) // window
         throw std::runtime_error("Error! Can't register main window class");
+    if (!MyCircleButton::RegisterCustomButtonClass(windowClass.hInstance)) // circle button
+        throw std::runtime_error("Error! Can't register circle button class");
 
     /* creating main window */
     this->handler = CreateWindowEx(
@@ -111,6 +114,44 @@ void MyApp::InitWindow()
 
 void MyApp::CreateControls()
 {
+    RECT clientRect;
+    GetClientRect(handler, &clientRect);
+
+    /* top menu buttons */
+    const D2D1_COLOR_F closeButtonFillColor = D2D1::ColorF(D2D1::ColorF::DarkRed, 1.0f);
+    const D2D1_COLOR_F minimizeButtonFillColor = D2D1::ColorF(D2D1::ColorF::ForestGreen, 1.0f);
+    const D2D1_COLOR_F buttonBorderColor = D2D1::ColorF(D2D1::ColorF::Black, 1.0f);
+
+    closeButton = new MyCircleButton(
+        this->handler,
+        this->pFactory,
+        (int)MENU_ID::CLOSE_BUTTON,
+        clientRect.right - TOP_MENU_BTN_RADIUS - 20,
+        20,
+        TOP_MENU_BTN_RADIUS,
+        closeButtonFillColor,
+        buttonBorderColor
+    );
+    
+    minimizeButton = new MyCircleButton(
+        this->handler,
+        this->pFactory,
+        (int)MENU_ID::MINIMIZE_BUTTON,
+        clientRect.right - TOP_MENU_BTN_RADIUS * 2 - 20 * 2,
+        20,
+        TOP_MENU_BTN_RADIUS,
+        minimizeButtonFillColor,
+        buttonBorderColor
+    );
+}
+
+void MyApp::DiscradControls()
+{
+    if (closeButton)
+        delete closeButton;
+
+    if (minimizeButton)
+        delete minimizeButton;
 }
 
 HRESULT MyApp::CreateGraphicsResources()
@@ -142,9 +183,9 @@ HRESULT MyApp::CreateGraphicsResources()
             /* background  brush */
             ID2D1GradientStopCollection* pGradientStops = NULL;
             D2D1_GRADIENT_STOP gradientStops[2];
-            gradientStops[0].color = D2D1::ColorF(D2D1::ColorF::Blue, 1);
+            gradientStops[0].color = D2D1::ColorF(D2D1::ColorF::CornflowerBlue, 1);
             gradientStops[0].position = 0.0f;
-            gradientStops[1].color = D2D1::ColorF(D2D1::ColorF::Violet, 1);
+            gradientStops[1].color = D2D1::ColorF(D2D1::ColorF::DodgerBlue, 1);
             gradientStops[1].position = 1.0f;
 
             hResult = pRenderTarget->CreateGradientStopCollection(
@@ -168,9 +209,9 @@ HRESULT MyApp::CreateGraphicsResources()
 
             /* border brush */
             pGradientStops = NULL;
-            gradientStops[0].color = D2D1::ColorF(D2D1::ColorF::Violet, 1);
+            gradientStops[0].color = D2D1::ColorF(D2D1::ColorF::Blue, 1);
             gradientStops[0].position = 0.0f;
-            gradientStops[1].color = D2D1::ColorF(D2D1::ColorF::Blue, 1);
+            gradientStops[1].color = D2D1::ColorF(D2D1::ColorF::Violet, 1);
             gradientStops[1].position = 1.0f;
 
             hResult = pRenderTarget->CreateGradientStopCollection(
@@ -203,13 +244,12 @@ void MyApp::OnPaint()
 {
     HRESULT hResult = CreateGraphicsResources();
 
-
     if (SUCCEEDED(hResult))
 
     {
         /* prepare for drawing */
-        //PAINTSTRUCT paintStruct;
-        //BeginPaint(m_hwnd, &paintStruct);
+        PAINTSTRUCT paintStruct;
+        BeginPaint(this->handler, &paintStruct);
         pRenderTarget->BeginDraw();
         pRenderTarget->Clear();
 
@@ -226,15 +266,14 @@ void MyApp::OnPaint()
         pRenderTarget->FillRoundedRectangle(&roundedWindowRect, pBackgroudnGradientBrush);
         pRenderTarget->DrawRoundedRectangle(&roundedWindowRect, pWindowBorderBrush, 2.0f, NULL);
 
+        /* end drawing*/
         hResult = pRenderTarget->EndDraw();
         if (FAILED(hResult) || hResult == D2DERR_RECREATE_TARGET)
         {
             DiscardGraphicsResources();
         }
-        //EndPaint(m_hwnd, &paintStruct);
+        EndPaint(this->handler, &paintStruct);
     }
-
-
 }
 
 void MyApp::Resize()
@@ -265,6 +304,7 @@ LRESULT MyApp::WndProc(UINT message, WPARAM wParam, LPARAM lParam)
 
         case WM_DESTROY:
             DiscardGraphicsResources();
+            DiscradControls();
             SafeRelease(&pFactory);
             PostQuitMessage(0);
             return 0;

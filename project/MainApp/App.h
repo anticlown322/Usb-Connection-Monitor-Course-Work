@@ -1,6 +1,8 @@
 #ifndef MY_APP_CLASS
 #define MY_APP_CLASS
 
+#include "myCircleButton.h"
+
 class MyApp
 {
 public:
@@ -22,6 +24,7 @@ private:
 
     void    InitWindow();
     void    CreateControls();
+    void    DiscradControls();
     HRESULT CreateGraphicsResources();
     void    DiscardGraphicsResources();
     void    OnPaint();
@@ -32,14 +35,19 @@ private:
     /* fields */
     HWND handler;
 
-    ID2D1Factory             *pFactory;
-    ID2D1HwndRenderTarget    *pRenderTarget;
-    ID2D1LinearGradientBrush *pBackgroudnGradientBrush;
-    ID2D1LinearGradientBrush *pWindowBorderBrush;
+    ID2D1Factory* pFactory;
+    ID2D1HwndRenderTarget* pRenderTarget;
+    ID2D1LinearGradientBrush* pBackgroudnGradientBrush;
+    ID2D1LinearGradientBrush* pWindowBorderBrush;
+
+    MyCircleButton* closeButton;
+    MyCircleButton* minimizeButton;
 
     /* static fields */
     static const int startWindowWidth = 800;
     static const int startWindowHeight = 600;
+
+    static const int TOP_MENU_BTN_RADIUS = 20;
 };
 
 #endif // MY_APP_CLASS
