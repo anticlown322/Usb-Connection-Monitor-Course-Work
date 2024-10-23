@@ -15,6 +15,9 @@
 #endif
 
 enum class MENU_ID {
+    CLOSE_BUTTON = 10,
+    MINIMIZE_BUTTON,
+    MAXIMIZE_BUTTON
 };
 
 /* Utility */
@@ -35,5 +38,6 @@ template <class T> void SafeRelease(T** ppT)
 
 #include <Windows.h>
 #include <d2d1.h>
+#include <gdiplus.h>
 
 #endif // GENERAL_H
