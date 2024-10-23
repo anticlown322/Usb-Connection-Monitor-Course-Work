@@ -22,32 +22,48 @@ private:
     /* funcs */
     LRESULT CALLBACK WndProc(UINT message, WPARAM wParam, LPARAM lParam);
 
+    //initialization
     void    InitWindow();
     void    CreateControls();
-    void    DiscradControls();
     HRESULT CreateGraphicsResources();
-    void    DiscardGraphicsResources();
+
+    //logic
     void    OnPaint();
-    void    Resize();
+    void    OnSize();
+    void    OnLBtnDown();
+    void    OnCommand(WPARAM menuId);
+
+    //finalization
+    void    DiscradControls();
+    void    DiscardGraphicsResources();
 
     /* static funcs */
 
     /* fields */
     HWND handler;
 
+    //d2d1
     ID2D1Factory* pFactory;
     ID2D1HwndRenderTarget* pRenderTarget;
     ID2D1LinearGradientBrush* pBackgroudnGradientBrush;
     ID2D1LinearGradientBrush* pWindowBorderBrush;
 
+    //gdi
+    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+    ULONG_PTR gdiplusToken;
+
+    //objects
     MyCircleButton* closeButton;
     MyCircleButton* minimizeButton;
+    MyCircleButton* maximizeButton;
 
     /* static fields */
     static const int startWindowWidth = 800;
     static const int startWindowHeight = 600;
 
     static const int TOP_MENU_BTN_RADIUS = 20;
+    static const int TOP_MENU_BTN_GAP = 10;
+    static const int TOP_MENU_BTN_Y = 10;
 };
 
 #endif // MY_APP_CLASS
