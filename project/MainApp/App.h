@@ -28,6 +28,7 @@ private:
     HRESULT CreateGraphicsResources();
 
     //logic
+    int    OnCreate();
     void    OnPaint();
     void    OnSize();
     void    OnLBtnDown();
@@ -41,12 +42,16 @@ private:
 
     /* fields */
     HWND handler;
+    HFONT hHeaderFont;
 
     //d2d1
     ID2D1Factory* pFactory;
+    IDWriteFactory* pDWriteFactory;
     ID2D1HwndRenderTarget* pRenderTarget;
+
     ID2D1LinearGradientBrush* pBackgroudnGradientBrush;
     ID2D1LinearGradientBrush* pWindowBorderBrush;
+    ID2D1SolidColorBrush* pHeaderTextBrush;
 
     //gdi
     Gdiplus::GdiplusStartupInput gdiplusStartupInput;

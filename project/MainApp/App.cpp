@@ -242,6 +242,9 @@ HRESULT MyApp::CreateGraphicsResources()
                     &pWindowBorderBrush
                 );
             }
+
+            /* header text brush */
+            pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &pHeaderTextBrush);
         }
     }
 
@@ -249,6 +252,26 @@ HRESULT MyApp::CreateGraphicsResources()
 }
 
 /* Logic */
+
+int MyApp::OnCreate()
+{
+    if (FAILED(D2D1CreateFactory(
+        D2D1_FACTORY_TYPE_SINGLE_THREADED, &pFactory)))
+    {
+        return -1;  // Fail CreateWindowEx.
+    }
+
+    if (FAILED(DWriteCreateFactory(
+        DWRITE_FACTORY_TYPE_SHARED,
+        __uuidof(IDWriteFactory),
+        reinterpret_cast<IUnknown**>(&pDWriteFactory)
+    )))
+    {
+        return -1;
+    }
+
+    return 0;
+}
 
 void MyApp::OnPaint()
 {
@@ -260,6 +283,8 @@ void MyApp::OnPaint()
         /* prepare for drawing */
         PAINTSTRUCT paintStruct;
         BeginPaint(this->handler, &paintStruct);
+        HDC hDevContext = GetWindowDC(handler);
+
         pRenderTarget->BeginDraw();
         pRenderTarget->Clear();
 
@@ -275,6 +300,24 @@ void MyApp::OnPaint()
 
         pRenderTarget->FillRoundedRectangle(&roundedWindowRect, pBackgroudnGradientBrush);
         pRenderTarget->DrawRoundedRectangle(&roundedWindowRect, pWindowBorderBrush, 2.0f, NULL);
+
+        /* draw text */
+        IDWriteTextFormat* pTextFormat = nullptr;
+        pDWriteFactory->CreateTextFormat(
+            L"JetBrains Mono", nullptr, 
+            DWRITE_FONT_WEIGHT_BOLD, 
+            DWRITE_FONT_STYLE_NORMAL, 
+            DWRITE_FONT_STRETCH_MEDIUM,
+            24.0f, L"en-US", &pTextFormat);
+
+        pRenderTarget->DrawText(
+            L"USB Monitor", 
+            wcslen(L"USB Monitor"),
+            pTextFormat, 
+            D2D1::RectF(20, 10, clientSizes.width, clientSizes.height),
+            pHeaderTextBrush);
+
+        pTextFormat->Release();
 
         /* end drawing*/
         hResult = pRenderTarget->EndDraw();
@@ -334,17 +377,13 @@ LRESULT MyApp::WndProc(UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
         case WM_CREATE:
-            if (FAILED(D2D1CreateFactory(
-                D2D1_FACTORY_TYPE_SINGLE_THREADED, &pFactory)))
-            {
-                return -1;  // Fail CreateWindowEx.
-            }
-            return 0;
+            return OnCreate();
 
         case WM_DESTROY:
             DiscardGraphicsResources();
             DiscradControls();
             SafeRelease(&pFactory);
+            SafeRelease(&pDWriteFactory);
             PostQuitMessage(0);
             return 0;
 
@@ -361,7 +400,7 @@ LRESULT MyApp::WndProc(UINT message, WPARAM wParam, LPARAM lParam)
             return 0;
 
         case WM_COMMAND:
-            OnCommand(LOWORD(wParam));
+            OnCommand(wParam);
             return 0;
 
         default:
@@ -377,6 +416,7 @@ MyApp::~MyApp()
 
 void MyApp::DiscardGraphicsResources()
 {
+    SafeRelease(&pHeaderTextBrush);
     SafeRelease(&pBackgroudnGradientBrush);
     SafeRelease(&pWindowBorderBrush);
     SafeRelease(&pRenderTarget);
