@@ -97,15 +97,19 @@ void MyApp::InitWindow()
         throw std::runtime_error("Error! Can't register circle button class");
 
     /* creating main window */
+    this->isMaximized = false;
+    this->wndScalingCoef_X = 0.6;
+    this->wndScalingCoef_Y = 0.8;
+
     this->handler = CreateWindowEx(
         WS_EX_LAYERED, //for transparent d2d1 clear
         MyApp::className,
         MyApp::appName,
         WS_POPUP | WS_EX_TOPMOST, //borderless window
-        (SCREEN_WIDTH - this->START_WND_WIDTH) / 2,
-        (SCREEN_HEIGHT - this->START_WND_HEIGHT) / 2,
-        this->START_WND_WIDTH,
-        this->START_WND_HEIGHT,
+        (SCREEN_WIDTH * (1 - wndScalingCoef_X)) / 2,
+        (SCREEN_HEIGHT * (1 - wndScalingCoef_Y)) / 2,
+        SCREEN_WIDTH * wndScalingCoef_X,
+        SCREEN_HEIGHT * wndScalingCoef_Y,
         nullptr,
         nullptr,
         nullptr,
@@ -298,7 +302,6 @@ void MyApp::OnPaint()
     HRESULT hResult = CreateGraphicsResources();
 
     if (SUCCEEDED(hResult))
-
     {
         /* prepare for drawing */
         PAINTSTRUCT paintStruct;
@@ -308,32 +311,40 @@ void MyApp::OnPaint()
         pRenderTarget->BeginDraw();
         pRenderTarget->Clear();
 
-        /* get sizes */
         D2D1_SIZE_F clientSizes = pRenderTarget->GetSize();
 
         /* draw window backgorund and border */
-        D2D1_ROUNDED_RECT roundedWindowRect = D2D1::RoundedRect(
-            D2D1::RectF(0, 0, clientSizes.width, clientSizes.height),
-            30.f,
-            30.f
-        );
+        if (isMaximized)
+        {
+            D2D1_RECT_F windowRect = D2D1::RectF(0, 0, clientSizes.width, clientSizes.height);
+            pRenderTarget->FillRectangle(&windowRect, pBackgroudnGradientBrush);
+            pRenderTarget->DrawRectangle(&windowRect, pWindowBorderBrush);
+        }
+        else
+        {
+            D2D1_ROUNDED_RECT roundedWindowRect = D2D1::RoundedRect(
+                D2D1::RectF(0, 0, clientSizes.width, clientSizes.height),
+                30.f,
+                30.f
+            );
 
-        pRenderTarget->FillRoundedRectangle(&roundedWindowRect, pBackgroudnGradientBrush);
-        pRenderTarget->DrawRoundedRectangle(&roundedWindowRect, pWindowBorderBrush, 2.0f, NULL);
+            pRenderTarget->FillRoundedRectangle(&roundedWindowRect, pBackgroudnGradientBrush);
+            pRenderTarget->DrawRoundedRectangle(&roundedWindowRect, pWindowBorderBrush, 2.0f, NULL);
+        }
 
         /* draw text */
         IDWriteTextFormat* pTextFormat = nullptr;
         pDWriteFactory->CreateTextFormat(
-            L"JetBrains Mono", nullptr, 
-            DWRITE_FONT_WEIGHT_BOLD, 
-            DWRITE_FONT_STYLE_NORMAL, 
+            L"JetBrains Mono", nullptr,
+            DWRITE_FONT_WEIGHT_BOLD,
+            DWRITE_FONT_STYLE_NORMAL,
             DWRITE_FONT_STRETCH_MEDIUM,
             24.0f, L"en-US", &pTextFormat);
 
         pRenderTarget->DrawText(
-            L"USB Monitor", 
+            L"USB Monitor",
             wcslen(L"USB Monitor"),
-            pTextFormat, 
+            pTextFormat,
             D2D1::RectF(20, 10, clientSizes.width, clientSizes.height),
             pHeaderTextBrush);
 
@@ -353,13 +364,41 @@ void MyApp::OnSize()
 {
     if (pRenderTarget != NULL)
     {
+        /* preparing for resize */
+        isMaximized = !isMaximized;
+
         RECT clientRect;
         GetClientRect(handler, &clientRect);
-
         D2D1_SIZE_U size = D2D1::SizeU(clientRect.right, clientRect.bottom);
 
+        /* buttons positions */
+        SetWindowPos(
+            closeButton->handler,
+            HWND_TOPMOST,
+            clientRect.right - (TOP_MENU_BTN_RADIUS + TOP_MENU_BTN_GAP),
+            TOP_MENU_BTN_Y,
+            0,
+            0,
+            SWP_NOSIZE | SWP_NOZORDER);
+        SetWindowPos(
+            minimizeButton->handler,
+            HWND_TOPMOST,
+            clientRect.right - (TOP_MENU_BTN_RADIUS + TOP_MENU_BTN_GAP) * 2,
+            TOP_MENU_BTN_Y,
+            0,
+            0,
+            SWP_NOSIZE | SWP_NOZORDER);
+        SetWindowPos(
+            maximizeButton->handler,
+            HWND_TOPMOST,
+            clientRect.right - (TOP_MENU_BTN_RADIUS + TOP_MENU_BTN_GAP) * 3,
+            TOP_MENU_BTN_Y,
+            0,
+            0,
+            SWP_NOSIZE | SWP_NOZORDER);
+
         pRenderTarget->Resize(size);
-        InvalidateRect(handler, NULL, FALSE);
+        InvalidateRect(handler, NULL, TRUE);
     }
 }
 
@@ -386,7 +425,7 @@ void MyApp::OnCommand(WPARAM menuId)
 
         case (int)MENU_ID::MAXIMIZE_BUTTON:
             {
-                ShowWindow(handler, SW_MAXIMIZE);
+                isMaximized ? ShowWindow(handler, SW_NORMAL) : ShowWindow(handler, SW_MAXIMIZE);
             }
             break;
     }

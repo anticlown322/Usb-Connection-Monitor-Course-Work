@@ -22,7 +22,6 @@ public:
 private:
     /* funcs */
     void OnPaint();
-    void Resize();
     void OnLBtnDown();
 
     /* fields */
