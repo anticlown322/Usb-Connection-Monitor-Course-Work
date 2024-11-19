@@ -17,7 +17,7 @@ MyApp::MyApp()
         std::string exceptionData = exception.what();
         MessageBox(
             nullptr,
-            std::wstring(begin(exceptionData), end(exceptionData)).c_str(),
+            std::wstring( begin(exceptionData), end(exceptionData) ).c_str(),
             L"Error!",
             MB_ICONERROR | MB_OK
         );
@@ -79,16 +79,16 @@ void MyApp::InitWindow()
     /* init main window */
     WNDCLASS windowClass = { 0 };
 
-    windowClass.cbClsExtra = 0;
-    windowClass.cbWndExtra = 0;
+    windowClass.cbClsExtra    = 0;
+    windowClass.cbWndExtra    = 0;
     windowClass.hbrBackground = reinterpret_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
-    windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    windowClass.hInstance = GetModuleHandle(nullptr);
-    windowClass.hIcon = LoadIcon(windowClass.hInstance, MAKEINTRESOURCE(IDI_ICON1));
-    windowClass.lpfnWndProc = MyApp::AppProc;
+    windowClass.hCursor       = LoadCursor(nullptr, IDC_ARROW);
+    windowClass.hInstance     = GetModuleHandle(nullptr);
+    windowClass.hIcon         = LoadIcon(windowClass.hInstance, MAKEINTRESOURCE(IDI_ICON1));
+    windowClass.lpfnWndProc   = MyApp::AppProc;
     windowClass.lpszClassName = MyApp::className;
-    windowClass.lpszMenuName = nullptr;
-    windowClass.style = CS_VREDRAW | CS_HREDRAW;
+    windowClass.lpszMenuName  = nullptr;
+    windowClass.style         = CS_VREDRAW | CS_HREDRAW;
 
     /* register classes */
     if (!RegisterClass(&windowClass)) // window
@@ -102,17 +102,20 @@ void MyApp::InitWindow()
         MyApp::className,
         MyApp::appName,
         WS_POPUP | WS_EX_TOPMOST, //borderless window
-        (SCREEN_WIDTH - this->startWindowWidth) / 2,
-        (SCREEN_HEIGHT - this->startWindowHeight) / 2,
-        this->startWindowWidth,
-        this->startWindowHeight,
+        (SCREEN_WIDTH - this->START_WND_WIDTH) / 2,
+        (SCREEN_HEIGHT - this->START_WND_HEIGHT) / 2,
+        this->START_WND_WIDTH,
+        this->START_WND_HEIGHT,
         nullptr,
         nullptr,
         nullptr,
-        this
-    );
+        this);
 
-    SetLayeredWindowAttributes(this->handler, RGB(0, 0, 0), 0, LWA_COLORKEY); //for transparency
+    SetLayeredWindowAttributes( //for transparency
+        this->handler, 
+        RGB(0, 0, 0), 
+        0, 
+        LWA_COLORKEY); 
 
     if (!this->handler)
         throw std::runtime_error("Error! Can't create main window");
@@ -124,9 +127,9 @@ void MyApp::CreateControls()
     GetClientRect(handler, &clientRect);
 
     /* top menu buttons */
-    Gdiplus::Color darkRedColor(245, 66, 108);
+    Gdiplus::Color darkRedColor   (245, 66, 108);
     Gdiplus::Color darkYellowColor(217, 201, 63);
-    Gdiplus::Color darkGreenColor(107, 217, 52);
+    Gdiplus::Color darkGreenColor (107, 217, 52);
 
     closeButton = new MyCircleButton(
         this->handler,
@@ -134,8 +137,7 @@ void MyApp::CreateControls()
         clientRect.right - (TOP_MENU_BTN_RADIUS + TOP_MENU_BTN_GAP),
         TOP_MENU_BTN_Y,
         TOP_MENU_BTN_RADIUS,
-        darkRedColor
-    );
+        darkRedColor);
 
     minimizeButton = new MyCircleButton(
         this->handler,
@@ -143,33 +145,56 @@ void MyApp::CreateControls()
         clientRect.right - (TOP_MENU_BTN_RADIUS + TOP_MENU_BTN_GAP) * 2,
         TOP_MENU_BTN_Y,
         TOP_MENU_BTN_RADIUS,
-        darkYellowColor
-    );
+        darkYellowColor);
 
-    new MyCircleButton(
+    maximizeButton = new MyCircleButton(
         this->handler,
         (int)MENU_ID::MAXIMIZE_BUTTON,
         clientRect.right - (TOP_MENU_BTN_RADIUS + TOP_MENU_BTN_GAP) * 3,
         TOP_MENU_BTN_Y,
         TOP_MENU_BTN_RADIUS,
-        darkGreenColor
-    );
+        darkGreenColor);
 }
 
-void MyApp::DiscradControls()
-{
-    if (closeButton)
-        delete closeButton;
+/* Logic */
 
-    if (minimizeButton)
-        delete minimizeButton;
+LRESULT MyApp::WndProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message)
+    {
+        case WM_CREATE:
+            return OnCreate();
+
+        case WM_DESTROY:
+            OnDestroy();
+            return 0;
+
+        case WM_PAINT:
+            OnPaint();
+            return 0;
+
+        case WM_SIZE:
+            OnSize();
+            return 0;
+
+        case WM_LBUTTONDOWN:
+            OnLBtnDown();
+            return 0;
+
+        case WM_COMMAND:
+            OnCommand(wParam);
+            return 0;
+
+        default:
+            return DefWindowProc(handler, message, wParam, lParam);
+    }
 }
 
 HRESULT MyApp::CreateGraphicsResources()
 {
     HRESULT hResult = S_OK;
 
-    if (pRenderTarget == NULL)
+    if (NULL == pRenderTarget)
     {
         /* window */
         RECT clientRect;
@@ -177,8 +202,7 @@ HRESULT MyApp::CreateGraphicsResources()
 
         D2D1_SIZE_U size = D2D1::SizeU(
             clientRect.right - clientRect.left,
-            clientRect.bottom - clientRect.top
-        );
+            clientRect.bottom - clientRect.top);
 
         /* render */
         hResult = pFactory->CreateHwndRenderTarget(
@@ -186,17 +210,16 @@ HRESULT MyApp::CreateGraphicsResources()
                 D2D1_RENDER_TARGET_TYPE_DEFAULT,
                 D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED)),
             D2D1::HwndRenderTargetProperties(handler, size),
-            &pRenderTarget
-        );
+            &pRenderTarget);
 
         if (SUCCEEDED(hResult))
         {
             /* background  brush */
             ID2D1GradientStopCollection* pGradientStops = NULL;
             D2D1_GRADIENT_STOP gradientStops[2];
-            gradientStops[0].color = D2D1::ColorF(D2D1::ColorF::CornflowerBlue, 1);
+            gradientStops[0].color    = D2D1::ColorF(D2D1::ColorF::CornflowerBlue, 1);
             gradientStops[0].position = 0.0f;
-            gradientStops[1].color = D2D1::ColorF(D2D1::ColorF::DodgerBlue, 1);
+            gradientStops[1].color    = D2D1::ColorF(D2D1::ColorF::DodgerBlue, 1);
             gradientStops[1].position = 1.0f;
 
             hResult = pRenderTarget->CreateGradientStopCollection(
@@ -204,8 +227,7 @@ HRESULT MyApp::CreateGraphicsResources()
                 2,
                 D2D1_GAMMA_2_2,
                 D2D1_EXTEND_MODE_CLAMP,
-                &pGradientStops
-            );
+                &pGradientStops);
 
             if (SUCCEEDED(hResult))
             {
@@ -214,15 +236,14 @@ HRESULT MyApp::CreateGraphicsResources()
                         D2D1::Point2F(clientRect.left, clientRect.top),
                         D2D1::Point2F(clientRect.right, clientRect.bottom)),
                     pGradientStops,
-                    &pBackgroudnGradientBrush
-                );
+                    &pBackgroudnGradientBrush);
             }
 
             /* border brush */
             pGradientStops = NULL;
-            gradientStops[0].color = D2D1::ColorF(D2D1::ColorF::Blue, 1);
+            gradientStops[0].color    = D2D1::ColorF(D2D1::ColorF::Blue, 1);
             gradientStops[0].position = 0.0f;
-            gradientStops[1].color = D2D1::ColorF(D2D1::ColorF::Violet, 1);
+            gradientStops[1].color    = D2D1::ColorF(D2D1::ColorF::Violet, 1);
             gradientStops[1].position = 1.0f;
 
             hResult = pRenderTarget->CreateGradientStopCollection(
@@ -230,8 +251,7 @@ HRESULT MyApp::CreateGraphicsResources()
                 2,
                 D2D1_GAMMA_2_2,
                 D2D1_EXTEND_MODE_CLAMP,
-                &pGradientStops
-            );
+                &pGradientStops);
 
             if (SUCCEEDED(hResult))
             {
@@ -240,24 +260,24 @@ HRESULT MyApp::CreateGraphicsResources()
                         D2D1::Point2F(clientRect.left, clientRect.top),
                         D2D1::Point2F(clientRect.right, clientRect.bottom)),
                     pGradientStops,
-                    &pWindowBorderBrush
-                );
+                    &pWindowBorderBrush);
             }
 
             /* header text brush */
-            pRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &pHeaderTextBrush);
+            pRenderTarget->CreateSolidColorBrush(
+                D2D1::ColorF(D2D1::ColorF::White), 
+                &pHeaderTextBrush);
         }
     }
 
     return hResult;
 }
 
-/* Logic */
-
 int MyApp::OnCreate()
 {
     if (FAILED(D2D1CreateFactory(
-        D2D1_FACTORY_TYPE_SINGLE_THREADED, &pFactory)))
+        D2D1_FACTORY_TYPE_SINGLE_THREADED, 
+        &pFactory)))
     {
         return -1;  // Fail CreateWindowEx.
     }
@@ -265,8 +285,7 @@ int MyApp::OnCreate()
     if (FAILED(DWriteCreateFactory(
         DWRITE_FACTORY_TYPE_SHARED,
         __uuidof(IDWriteFactory),
-        reinterpret_cast<IUnknown**>(&pDWriteFactory)
-    )))
+        reinterpret_cast<IUnknown**>(&pDWriteFactory))))
     {
         return -1;
     }
@@ -373,46 +392,33 @@ void MyApp::OnCommand(WPARAM menuId)
     }
 }
 
-LRESULT MyApp::WndProc(UINT message, WPARAM wParam, LPARAM lParam)
+void MyApp::OnDestroy()
 {
-    switch (message)
-    {
-        case WM_CREATE:
-            return OnCreate();
+    DiscardGraphicsResources();
+    DiscradControls();
 
-        case WM_DESTROY:
-            DiscardGraphicsResources();
-            DiscradControls();
-            SafeRelease(&pFactory);
-            SafeRelease(&pDWriteFactory);
-            PostQuitMessage(0);
-            return 0;
+    SafeRelease(&pFactory);
+    SafeRelease(&pDWriteFactory);
 
-        case WM_PAINT:
-            OnPaint();
-            return 0;
-
-        case WM_SIZE:
-            OnSize();
-            return 0;
-
-        case WM_LBUTTONDOWN:
-            OnLBtnDown();
-            return 0;
-
-        case WM_COMMAND:
-            OnCommand(wParam);
-            return 0;
-
-        default:
-            return DefWindowProc(handler, message, wParam, lParam);
-    }
+    PostQuitMessage(0);
 }
 
 /* Finalization */
 
 MyApp::~MyApp()
 {
+}
+
+void MyApp::DiscradControls()
+{
+    if (closeButton)
+        delete closeButton;
+
+    if (minimizeButton)
+        delete minimizeButton;
+
+    if (maximizeButton)
+        delete minimizeButton;
 }
 
 void MyApp::DiscardGraphicsResources()
