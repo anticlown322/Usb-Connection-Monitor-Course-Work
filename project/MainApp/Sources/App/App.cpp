@@ -418,7 +418,7 @@ void MyApp::DiscradControls()
         delete minimizeButton;
 
     if (maximizeButton)
-        delete minimizeButton;
+        delete maximizeButton;
 }
 
 void MyApp::DiscardGraphicsResources()
