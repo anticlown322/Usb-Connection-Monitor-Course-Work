@@ -20,19 +20,21 @@ public:
 
 private:
     /* funcs */
-    LRESULT CALLBACK WndProc(UINT message, WPARAM wParam, LPARAM lParam);
 
     //initialization
     void    InitWindow();
     void    CreateControls();
-    HRESULT CreateGraphicsResources();
 
     //logic
-    int    OnCreate();
-    void    OnPaint();
-    void    OnSize();
-    void    OnLBtnDown();
-    void    OnCommand(WPARAM menuId);
+    LRESULT CALLBACK WndProc(UINT message, WPARAM wParam, LPARAM lParam);
+    HRESULT CreateGraphicsResources();
+
+    int  OnCreate();
+    void OnPaint();
+    void OnSize();
+    void OnLBtnDown();
+    void OnCommand(WPARAM menuId);
+    void OnDestroy();
 
     //finalization
     void    DiscradControls();
@@ -45,17 +47,16 @@ private:
     HFONT hHeaderFont;
 
     //d2d1
-    ID2D1Factory* pFactory;
-    IDWriteFactory* pDWriteFactory;
-    ID2D1HwndRenderTarget* pRenderTarget;
-
+    ID2D1Factory*             pFactory;
+    IDWriteFactory*           pDWriteFactory;
+    ID2D1HwndRenderTarget*    pRenderTarget;
     ID2D1LinearGradientBrush* pBackgroudnGradientBrush;
     ID2D1LinearGradientBrush* pWindowBorderBrush;
-    ID2D1SolidColorBrush* pHeaderTextBrush;
+    ID2D1SolidColorBrush*     pHeaderTextBrush;
 
     //gdi
     Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-    ULONG_PTR gdiplusToken;
+    ULONG_PTR                    gdiplusToken;
 
     //objects
     MyCircleButton* closeButton;
@@ -63,12 +64,12 @@ private:
     MyCircleButton* maximizeButton;
 
     /* static fields */
-    static const int startWindowWidth = 800;
-    static const int startWindowHeight = 600;
+    static const int START_WND_WIDTH  = 800;
+    static const int START_WND_HEIGHT = 600;
 
     static const int TOP_MENU_BTN_RADIUS = 20;
-    static const int TOP_MENU_BTN_GAP = 10;
-    static const int TOP_MENU_BTN_Y = 10;
+    static const int TOP_MENU_BTN_GAP    = 10;
+    static const int TOP_MENU_BTN_Y      = 10;
 };
 
 #endif // MY_APP_CLASS
