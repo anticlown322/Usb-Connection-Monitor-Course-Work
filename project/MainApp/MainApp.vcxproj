@@ -104,6 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -119,6 +120,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -128,18 +130,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="App.cpp" />
+    <ClCompile Include="Sources\App\App.cpp" />
     <ClCompile Include="Entry.cpp" />
-    <ClCompile Include="myCircleButton.cpp" />
+    <ClCompile Include="Sources\Components\myCircleButton.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="App.h" />
-    <ClInclude Include="general.h" />
-    <ClInclude Include="myCircleButton.h" />
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="Headers\App\App.h" />
+    <ClInclude Include="Headers\App\general.h" />
+    <ClInclude Include="Headers\Components\myCircleButton.h" />
+    <ClInclude Include="Resources\resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="MainApp.rc" />
+    <ResourceCompile Include="Resources\MainApp.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\icons\usb_connector.ico" />

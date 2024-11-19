@@ -1,7 +1,7 @@
 #ifndef MY_APP_CLASS
 #define MY_APP_CLASS
 
-#include "myCircleButton.h"
+#include "MainApp\Headers\Components\myCircleButton.h"
 
 class MyApp
 {

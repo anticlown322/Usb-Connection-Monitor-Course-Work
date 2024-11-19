@@ -1,6 +1,7 @@
-#include "general.h"
-#include "resource.h"
-#include "App.h"
+#include "MainApp\Headers\App\general.h"
+#include "MainApp\Headers\App\App.h"
+
+#include "MainApp\Resources\resource.h"
 
 /* Startup code */
 
