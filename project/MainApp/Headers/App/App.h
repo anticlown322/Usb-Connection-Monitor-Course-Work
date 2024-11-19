@@ -22,8 +22,8 @@ private:
     /* funcs */
 
     //initialization
-    void    InitWindow();
-    void    CreateControls();
+    void InitWindow();
+    void CreateControls();
 
     //logic
     LRESULT CALLBACK WndProc(UINT message, WPARAM wParam, LPARAM lParam);
@@ -37,8 +37,8 @@ private:
     void OnDestroy();
 
     //finalization
-    void    DiscradControls();
-    void    DiscardGraphicsResources();
+    void DiscradControls();
+    void DiscardGraphicsResources();
 
     /* static funcs */
 
@@ -63,13 +63,16 @@ private:
     MyCircleButton* minimizeButton;
     MyCircleButton* maximizeButton;
 
-    /* static fields */
-    static const int START_WND_WIDTH  = 800;
-    static const int START_WND_HEIGHT = 600;
+    //utility
+    double wndScalingCoef_X;
+    double wndScalingCoef_Y;
+    bool   isMaximized;
 
+    /* static fields */
     static const int TOP_MENU_BTN_RADIUS = 20;
     static const int TOP_MENU_BTN_GAP    = 10;
     static const int TOP_MENU_BTN_Y      = 10;
+    static const int HEADER_HEIGHT       = 50;
 };
 
 #endif // MY_APP_CLASS

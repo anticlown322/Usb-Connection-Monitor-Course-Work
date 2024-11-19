@@ -72,10 +72,6 @@ LRESULT CALLBACK MyCircleButton::CircleButtonProc(UINT uMsg, WPARAM wParam, LPAR
             OnPaint();
             return 0;
 
-        case WM_SIZE:
-            Resize();
-            return 0;
-
         case WM_LBUTTONDOWN:
             OnLBtnDown();
             return 0;
@@ -94,7 +90,7 @@ void MyCircleButton::OnPaint()
     RECT clientRect;
     GetClientRect(handler, &clientRect);
 
-    Gdiplus::Graphics graphics(hDevContext);
+    Gdiplus::Graphics   graphics(hDevContext);
     Gdiplus::SolidBrush brush(fillColor);
 
     /* draw button */
@@ -106,10 +102,6 @@ void MyCircleButton::OnPaint()
 
     /* end drawing*/
     EndPaint(this->handler, &paintStruct);
-}
-
-void MyCircleButton::Resize()
-{
 }
 
 void MyCircleButton::OnLBtnDown()
