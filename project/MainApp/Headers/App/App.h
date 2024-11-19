@@ -24,6 +24,7 @@ private:
     //initialization
     void InitWindow();
     void CreateControls();
+    void InitMainList();
 
     //logic
     LRESULT CALLBACK WndProc(UINT message, WPARAM wParam, LPARAM lParam);
@@ -62,6 +63,7 @@ private:
     MyCircleButton* closeButton;
     MyCircleButton* minimizeButton;
     MyCircleButton* maximizeButton;
+    HWND hMainList;
 
     //utility
     double wndScalingCoef_X;
@@ -73,6 +75,9 @@ private:
     static const int TOP_MENU_BTN_GAP    = 10;
     static const int TOP_MENU_BTN_Y      = 10;
     static const int HEADER_HEIGHT       = 50;
+
+    static const int LIST_MARGIN = 1;
+    static const int NUM_OF_COLS = 10;
 };
 
 #endif // MY_APP_CLASS

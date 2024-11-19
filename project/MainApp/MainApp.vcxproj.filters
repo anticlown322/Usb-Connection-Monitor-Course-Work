@@ -13,14 +13,8 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\UI">
-      <UniqueIdentifier>{ce34ca32-ec49-4721-b472-616c11735802}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Algs">
       <UniqueIdentifier>{7e1c6c38-ddfb-4f86-95c6-02f46a6ba1f6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\UI">
-      <UniqueIdentifier>{f30b8265-f8ee-4ce7-bc01-195c4a4d533a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Algs">
       <UniqueIdentifier>{56b71f94-527d-426b-adc8-aec7e0a67c2c}</UniqueIdentifier>
@@ -37,40 +31,60 @@
     <Filter Include="Source Files\Core Types">
       <UniqueIdentifier>{326120c3-6f96-494c-8ee8-da38184a2f56}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Files">
+      <UniqueIdentifier>{4aa197dc-3804-4ca5-8037-ebb39450ddfc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Images">
+      <UniqueIdentifier>{21d5ae83-d73a-40e1-8af9-56985422b211}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Icons">
+      <UniqueIdentifier>{f49bc677-8ce8-447a-a4b5-e5f3311d8580}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Components">
+      <UniqueIdentifier>{ce34ca32-ec49-4721-b472-616c11735802}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Components">
+      <UniqueIdentifier>{f30b8265-f8ee-4ce7-bc01-195c4a4d533a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="App.cpp">
-      <Filter>Source Files\App</Filter>
-    </ClCompile>
     <ClCompile Include="Entry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="myCircleButton.cpp">
-      <Filter>Source Files\UI</Filter>
+    <ClCompile Include="Sources\App\App.cpp">
+      <Filter>Source Files\App</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Components\myCircleButton.cpp">
+      <Filter>Source Files\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="App.h">
+    <ClInclude Include="Headers\App\App.h">
       <Filter>Header Files\App</Filter>
     </ClInclude>
-    <ClInclude Include="general.h">
+    <ClInclude Include="Headers\App\general.h">
       <Filter>Header Files\App</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Headers\Components\myCircleButton.h">
+      <Filter>Header Files\Components</Filter>
     </ClInclude>
-    <ClInclude Include="myCircleButton.h">
-      <Filter>Header Files\UI</Filter>
+    <ClInclude Include="Resources\resource.h">
+      <Filter>Resource Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="MainApp.rc">
+    <ResourceCompile Include="Resources\MainApp.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\icons\usb_connector.ico">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Icons</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="Resources\Files\MainApp.manifest">
+      <Filter>Resource Files\Files</Filter>
+    </Manifest>
   </ItemGroup>
 </Project>

@@ -158,6 +158,53 @@ void MyApp::CreateControls()
         TOP_MENU_BTN_Y,
         TOP_MENU_BTN_RADIUS,
         darkGreenColor);
+
+    /*list*/
+    hMainList = CreateWindow(
+        WC_LISTVIEW,
+        L"",
+        WS_CHILD | WS_VISIBLE | LVS_REPORT,
+        LIST_MARGIN,
+        HEADER_HEIGHT + LIST_MARGIN,
+        clientRect.right - clientRect.left - LIST_MARGIN * 2,
+        clientRect.bottom - clientRect.top - (HEADER_HEIGHT + LIST_MARGIN) * 2,
+        handler,
+        (HMENU)MENU_ID::MAIN_LIST,
+        nullptr,
+        nullptr);
+
+    InitMainList();
+}
+
+void MyApp::InitMainList()
+{
+    RECT clientRect;
+    GetClientRect(handler, &clientRect);
+    int colWidth = (clientRect.right - clientRect.top) / NUM_OF_COLS;
+
+    LVCOLUMN column;
+    column.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+
+    const wchar_t* columnHeaders[NUM_OF_COLS] = {
+        L"Имя", L"Описание", L"Цена", 
+        L"Цена", L"Цена", L"Цена", 
+        L"Цена", L"Цена", L"Цена",
+        L"Цена",
+    };
+
+    for (int iCol = 0; iCol < NUM_OF_COLS; iCol++)
+    {
+        column.iSubItem = iCol;
+        column.pszText = (wchar_t*)columnHeaders[iCol]; 
+        column.cx = colWidth;
+
+        if (iCol < 2)
+            column.fmt = LVCFMT_LEFT;
+        else
+            column.fmt = LVCFMT_RIGHT;
+
+        SendMessage(hMainList, LVM_INSERTCOLUMN, (WPARAM)iCol, (LPARAM)&column);
+    }
 }
 
 /* Logic */
@@ -396,6 +443,20 @@ void MyApp::OnSize()
             0,
             0,
             SWP_NOSIZE | SWP_NOZORDER);
+
+        //if not maximized then list margins are both top and bottom
+        //if maximized then list margin is only top
+        int listResizeCoeff = isMaximized ? 1 : 2; 
+
+        /* main list */
+        SetWindowPos(
+            hMainList,
+            HWND_TOPMOST,
+            LIST_MARGIN,
+            HEADER_HEIGHT + LIST_MARGIN,
+            clientRect.right - clientRect.left - LIST_MARGIN * 2,
+            clientRect.bottom - clientRect.top - (HEADER_HEIGHT + LIST_MARGIN) * listResizeCoeff,
+            SWP_NOZORDER);
 
         pRenderTarget->Resize(size);
         InvalidateRect(handler, NULL, TRUE);

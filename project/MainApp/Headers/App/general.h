@@ -17,7 +17,9 @@
 enum class MENU_ID {
     CLOSE_BUTTON = 10,
     MINIMIZE_BUTTON,
-    MAXIMIZE_BUTTON
+    MAXIMIZE_BUTTON,
+
+    MAIN_LIST = 20
 };
 
 /* Utility */
@@ -36,7 +38,8 @@ template <class T> void SafeRelease(T** ppT)
 #define SCREEN_WIDTH  GetSystemMetrics(SM_CXSCREEN)
 #define SCREEN_HEIGHT GetSystemMetrics(SM_CYSCREEN)
 
-#include <Windows.h>
+#include <windows.h>
+#include <commctrl.h>
 #include <d2d1.h>
 #include <dwrite.h>
 #include <gdiplus.h>
