@@ -37,6 +37,10 @@ private:
     void OnCommand(WPARAM menuId);
     void OnDestroy();
 
+    //list
+    void SetSubItems(int itemIndex, const wchar_t** texts, int count);
+    void InsertItemWithSubItems(int itemIndex, const wchar_t** texts, int count);
+
     //finalization
     void DiscradControls();
     void DiscardGraphicsResources();

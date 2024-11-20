@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <exception>
 #include <fstream>
+#include <iostream>
 
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
@@ -24,6 +25,7 @@ enum class MENU_ID {
 
 /* Utility */
 #include <string>
+#include <vector>
 
 template <class T> void SafeRelease(T** ppT)
 {
@@ -43,5 +45,13 @@ template <class T> void SafeRelease(T** ppT)
 #include <d2d1.h>
 #include <dwrite.h>
 #include <gdiplus.h>
+
+/* Algs */
+#include <initguid.h> 
+#include <devguid.h> 
+#include <usbiodef.h>
+#include <devpkey.h>
+#include <setupapi.h> 
+#include <cfgmgr32.h> 
 
 #endif // GENERAL_H
