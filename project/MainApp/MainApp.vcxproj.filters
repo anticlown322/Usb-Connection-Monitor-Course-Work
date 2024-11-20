@@ -57,6 +57,9 @@
     <ClCompile Include="Sources\Components\myCircleButton.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Algs\UsbAlgs.cpp">
+      <Filter>Source Files\Algs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\App\App.h">
@@ -70,6 +73,9 @@
     </ClInclude>
     <ClInclude Include="Resources\resource.h">
       <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Algs\UsbAlgs.h">
+      <Filter>Header Files\Algs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

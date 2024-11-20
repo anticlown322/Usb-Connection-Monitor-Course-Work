@@ -1,5 +1,6 @@
 #include "MainApp\Headers\App\general.h"
 #include "MainApp\Headers\App\App.h"
+#include "MainApp\Headers\Algs\UsbAlgs.h"
 
 #include "MainApp\Resources\resource.h"
 
@@ -180,16 +181,17 @@ void MyApp::InitMainList()
 {
     RECT clientRect;
     GetClientRect(handler, &clientRect);
-    int colWidth = (clientRect.right - clientRect.top) / NUM_OF_COLS;
 
+    /* init columns */
+    int colWidth = (clientRect.right - clientRect.top) / NUM_OF_COLS;
     LVCOLUMN column;
     column.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
 
     const wchar_t* columnHeaders[NUM_OF_COLS] = {
-        L"Имя", L"Описание", L"Цена", 
-        L"Цена", L"Цена", L"Цена", 
-        L"Цена", L"Цена", L"Цена",
-        L"Цена",
+        L"ID", L"Hardware ID",
+        L"Описание", L"Класс",
+        L"GUID",
+        L"Подключено", L"Заблокировано"
     };
 
     for (int iCol = 0; iCol < NUM_OF_COLS; iCol++)
@@ -204,6 +206,26 @@ void MyApp::InitMainList()
             column.fmt = LVCFMT_RIGHT;
 
         SendMessage(hMainList, LVM_INSERTCOLUMN, (WPARAM)iCol, (LPARAM)&column);
+    }
+
+    /* init items */
+    std::vector<USBDeviceInfo> deviceInfos = getUSBDevicesInformation();
+    int deviceIndex = 0;
+
+    for (USBDeviceInfo device : deviceInfos)
+    {
+        const wchar_t** descriptions = new const wchar_t* [7];
+
+        descriptions[0] = device.deviceID.c_str();
+        descriptions[1] = device.hardwareID.c_str();
+        descriptions[2] = device.deviceDescription.c_str();
+        descriptions[3] = device.deviceClass.c_str();
+        descriptions[4] = L"GUID";
+        descriptions[5] = device.isConnected ? L"Да" : L"Нет";
+        descriptions[6] = device.isDisabled ? L"Да" : L"Нет";
+
+        InsertItemWithSubItems(deviceIndex, descriptions, 7);
+        deviceIndex++;
     }
 }
 
@@ -501,6 +523,41 @@ void MyApp::OnDestroy()
     SafeRelease(&pDWriteFactory);
 
     PostQuitMessage(0);
+}
+
+//list
+
+void MyApp::SetSubItems(int itemIndex, const wchar_t** texts, int count) {
+    LVITEM item;
+    item.mask = LVIF_TEXT;
+    item.iItem = itemIndex;
+
+    for (int i = 1; i < count; i++) { // Начинаем с 1, так как 0 уже установлен при вставке элемента
+        item.iSubItem = i;    
+        item.pszText = (wchar_t*)texts[i];
+        ListView_SetItem(hMainList, &item);
+    }
+}
+
+void MyApp::InsertItemWithSubItems(int itemIndex, const wchar_t** texts, int count) {
+    LVITEM item;
+    item.mask = LVIF_TEXT;
+    item.iItem = itemIndex;
+    item.iSubItem = 0;
+    item.pszText = (wchar_t*)texts[0];
+
+    int newItemIndex = ListView_InsertItem(hMainList, &item);
+
+    if (newItemIndex != -1) {
+        SetSubItems(newItemIndex, texts, count);
+    }
+    else {
+        MessageBox(
+            NULL, 
+            L"Failed to insert item into ListView", 
+            L"Error", 
+            MB_OK | MB_ICONERROR);
+    }
 }
 
 /* Finalization */
