@@ -18,7 +18,7 @@ MyApp::MyApp()
         std::string exceptionData = exception.what();
         MessageBox(
             nullptr,
-            std::wstring( begin(exceptionData), end(exceptionData) ).c_str(),
+            std::wstring(begin(exceptionData), end(exceptionData)).c_str(),
             L"Error!",
             MB_ICONERROR | MB_OK
         );
@@ -80,16 +80,16 @@ void MyApp::InitWindow()
     /* init main window */
     WNDCLASS windowClass = { 0 };
 
-    windowClass.cbClsExtra    = 0;
-    windowClass.cbWndExtra    = 0;
+    windowClass.cbClsExtra = 0;
+    windowClass.cbWndExtra = 0;
     windowClass.hbrBackground = reinterpret_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
-    windowClass.hCursor       = LoadCursor(nullptr, IDC_ARROW);
-    windowClass.hInstance     = GetModuleHandle(nullptr);
-    windowClass.hIcon         = LoadIcon(windowClass.hInstance, MAKEINTRESOURCE(IDI_ICON1));
-    windowClass.lpfnWndProc   = MyApp::AppProc;
+    windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    windowClass.hInstance = GetModuleHandle(nullptr);
+    windowClass.hIcon = LoadIcon(windowClass.hInstance, MAKEINTRESOURCE(IDI_ICON1));
+    windowClass.lpfnWndProc = MyApp::AppProc;
     windowClass.lpszClassName = MyApp::className;
-    windowClass.lpszMenuName  = nullptr;
-    windowClass.style         = CS_VREDRAW | CS_HREDRAW;
+    windowClass.lpszMenuName = nullptr;
+    windowClass.style = CS_VREDRAW | CS_HREDRAW;
 
     /* register classes */
     if (!RegisterClass(&windowClass)) // window
@@ -98,7 +98,7 @@ void MyApp::InitWindow()
         throw std::runtime_error("Error! Can't register circle button class");
 
     /* creating main window */
-    this->isMaximized = false;
+
     this->wndScalingCoef_X = 0.6;
     this->wndScalingCoef_Y = 0.8;
 
@@ -117,10 +117,10 @@ void MyApp::InitWindow()
         this);
 
     SetLayeredWindowAttributes( //for transparency
-        this->handler, 
-        RGB(0, 0, 0), 
-        0, 
-        LWA_COLORKEY); 
+        this->handler,
+        RGB(0, 0, 0),
+        0,
+        LWA_COLORKEY);
 
     if (!this->handler)
         throw std::runtime_error("Error! Can't create main window");
@@ -132,9 +132,9 @@ void MyApp::CreateControls()
     GetClientRect(handler, &clientRect);
 
     /* top menu buttons */
-    Gdiplus::Color darkRedColor   (245, 66, 108);
+    Gdiplus::Color darkRedColor(245, 66, 108);
     Gdiplus::Color darkYellowColor(217, 201, 63);
-    Gdiplus::Color darkGreenColor (107, 217, 52);
+    Gdiplus::Color darkGreenColor(107, 217, 52);
 
     closeButton = new MyCircleButton(
         this->handler,
@@ -188,43 +188,64 @@ void MyApp::InitMainList()
     column.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
 
     const wchar_t* columnHeaders[NUM_OF_COLS] = {
-        L"ID", L"Hardware ID",
-        L"Описание", L"Класс",
-        L"GUID",
-        L"Подключено", L"Заблокировано"
+        L"Описание", L"Mfg", L"Служба",
+        L"Файл драйвера", L"Версия драйвера",
+        L"Подключен", L"Запрещен", L"Безопасно извлекать", L"USB хаб", L"Возможности",
+        L"Расположение",
+        L"Серийный номер", L"USB класс", L"USB подкласс", L"USB протокол",
+        L"ID", L"Классовый GUID", L"Hardware ID", L"Префикс родительского ID",
     };
 
     for (int iCol = 0; iCol < NUM_OF_COLS; iCol++)
     {
         column.iSubItem = iCol;
-        column.pszText = (wchar_t*)columnHeaders[iCol]; 
+        column.pszText = (wchar_t*)columnHeaders[iCol];
         column.cx = colWidth;
-
-        if (iCol < 2)
-            column.fmt = LVCFMT_LEFT;
-        else
-            column.fmt = LVCFMT_RIGHT;
 
         SendMessage(hMainList, LVM_INSERTCOLUMN, (WPARAM)iCol, (LPARAM)&column);
     }
 
     /* init items */
-    std::vector<USBDeviceInfo> deviceInfos = getUSBDevicesInformation();
-    int deviceIndex = 0;
+    std::vector<USBDeviceInfo> deviceInfos = GetAllUsbDevices();
+    numOfDevices = deviceInfos.size();
 
+    int deviceIndex = 0;
     for (USBDeviceInfo device : deviceInfos)
     {
-        const wchar_t** descriptions = new const wchar_t* [7];
+        const wchar_t** descriptions = new const wchar_t* [NUM_OF_COLS];
 
-        descriptions[0] = device.deviceID.c_str();
-        descriptions[1] = device.hardwareID.c_str();
-        descriptions[2] = device.deviceDescription.c_str();
-        descriptions[3] = device.deviceClass.c_str();
-        descriptions[4] = L"GUID";
-        descriptions[5] = device.isConnected ? L"Да" : L"Нет";
-        descriptions[6] = device.isDisabled ? L"Да" : L"Нет";
+        //info
+        descriptions[DEV_INFO::DESC] = device.description.c_str();
+        descriptions[DEV_INFO::MFG] = device.manufactoring.c_str();
+        descriptions[DEV_INFO::SERVICE] = device.serviceName.c_str();
 
-        InsertItemWithSubItems(deviceIndex, descriptions, 7);
+        //driver
+        descriptions[DEV_INFO::DRIVER_FILE] = device.driverFilename.c_str();
+        descriptions[DEV_INFO::DRIVER_VERSION] = device.driverVersion.c_str();
+
+        //capabilities
+        descriptions[DEV_INFO::IS_CONNECTED] = device.isConnected ? L"Да" : L"Нет";
+        descriptions[DEV_INFO::IS_DIASBLED] = device.isDisabled ? L"Да" : L"Нет";
+        descriptions[DEV_INFO::IS_SAFE_TO_UNPLUG] = device.isSafeToUnplug ? L"Да" : L"Нет";
+        descriptions[DEV_INFO::IS_USB_HUB] = device.isUsbHub ? L"Да" : L"Нет";
+        descriptions[DEV_INFO::CAPABILITIES] = device.capabilities.c_str();
+
+        //location
+        descriptions[DEV_INFO::LOCATION] = device.location.c_str();
+
+        //addintional info
+        descriptions[DEV_INFO::SERIAL_NUM] = device.serialNumber.c_str();
+        descriptions[DEV_INFO::USB_CLASS] = device.usbClass.c_str();
+        descriptions[DEV_INFO::USB_SUBCLASS] = device.usbSubclass.c_str();
+        descriptions[DEV_INFO::USB_PROTOCOL] = device.usbProtocol.c_str();
+
+        //ids
+        descriptions[DEV_INFO::ID] = device.id.c_str();
+        descriptions[DEV_INFO::DEV_GUID] = device.devClassGUID.c_str();
+        descriptions[DEV_INFO::HARDWARE_ID] = device.hardwareID.c_str();
+        descriptions[DEV_INFO::PARENT_PREFIX] = device.parentIDPrefix.c_str();
+
+        InsertItemWithSubItems(deviceIndex, descriptions, NUM_OF_COLS);
         deviceIndex++;
     }
 }
@@ -290,9 +311,9 @@ HRESULT MyApp::CreateGraphicsResources()
             /* background  brush */
             ID2D1GradientStopCollection* pGradientStops = NULL;
             D2D1_GRADIENT_STOP gradientStops[2];
-            gradientStops[0].color    = D2D1::ColorF(D2D1::ColorF::CornflowerBlue, 1);
+            gradientStops[0].color = D2D1::ColorF(D2D1::ColorF::CornflowerBlue, 1);
             gradientStops[0].position = 0.0f;
-            gradientStops[1].color    = D2D1::ColorF(D2D1::ColorF::DodgerBlue, 1);
+            gradientStops[1].color = D2D1::ColorF(D2D1::ColorF::DodgerBlue, 1);
             gradientStops[1].position = 1.0f;
 
             hResult = pRenderTarget->CreateGradientStopCollection(
@@ -314,9 +335,9 @@ HRESULT MyApp::CreateGraphicsResources()
 
             /* border brush */
             pGradientStops = NULL;
-            gradientStops[0].color    = D2D1::ColorF(D2D1::ColorF::Blue, 1);
+            gradientStops[0].color = D2D1::ColorF(D2D1::ColorF::Blue, 1);
             gradientStops[0].position = 0.0f;
-            gradientStops[1].color    = D2D1::ColorF(D2D1::ColorF::Violet, 1);
+            gradientStops[1].color = D2D1::ColorF(D2D1::ColorF::Violet, 1);
             gradientStops[1].position = 1.0f;
 
             hResult = pRenderTarget->CreateGradientStopCollection(
@@ -338,7 +359,7 @@ HRESULT MyApp::CreateGraphicsResources()
 
             /* header text brush */
             pRenderTarget->CreateSolidColorBrush(
-                D2D1::ColorF(D2D1::ColorF::White), 
+                D2D1::ColorF(D2D1::ColorF::White),
                 &pHeaderTextBrush);
         }
     }
@@ -349,7 +370,7 @@ HRESULT MyApp::CreateGraphicsResources()
 int MyApp::OnCreate()
 {
     if (FAILED(D2D1CreateFactory(
-        D2D1_FACTORY_TYPE_SINGLE_THREADED, 
+        D2D1_FACTORY_TYPE_SINGLE_THREADED,
         &pFactory)))
     {
         return -1;  // Fail CreateWindowEx.
@@ -362,6 +383,9 @@ int MyApp::OnCreate()
     {
         return -1;
     }
+
+    isMaximized = false;
+    numOfDevices = 0;
 
     return 0;
 }
@@ -402,6 +426,7 @@ void MyApp::OnPaint()
         }
 
         /* draw text */
+        //title text
         IDWriteTextFormat* pTextFormat = nullptr;
         pDWriteFactory->CreateTextFormat(
             L"JetBrains Mono", nullptr,
@@ -415,6 +440,24 @@ void MyApp::OnPaint()
             wcslen(L"USB Monitor"),
             pTextFormat,
             D2D1::RectF(20, 10, clientSizes.width, clientSizes.height),
+            pHeaderTextBrush);
+
+        pTextFormat->Release();
+
+        //bottom text
+        std::wstring textToPrint = std::format(L"Количество найденных USB-устройств: {} ", numOfDevices).c_str();
+        pDWriteFactory->CreateTextFormat(
+            L"JetBrains Mono", nullptr,
+            DWRITE_FONT_WEIGHT_BOLD,
+            DWRITE_FONT_STYLE_NORMAL,
+            DWRITE_FONT_STRETCH_MEDIUM,
+            18.0f, L"en-US", &pTextFormat);
+
+        pRenderTarget->DrawText(
+            textToPrint.c_str(),
+            textToPrint.length(),
+            pTextFormat,
+            D2D1::RectF(20, clientSizes.height - 18 - 20, clientSizes.width, clientSizes.height),
             pHeaderTextBrush);
 
         pTextFormat->Release();
@@ -466,10 +509,6 @@ void MyApp::OnSize()
             0,
             SWP_NOSIZE | SWP_NOZORDER);
 
-        //if not maximized then list margins are both top and bottom
-        //if maximized then list margin is only top
-        int listResizeCoeff = isMaximized ? 1 : 2; 
-
         /* main list */
         SetWindowPos(
             hMainList,
@@ -477,7 +516,7 @@ void MyApp::OnSize()
             LIST_MARGIN,
             HEADER_HEIGHT + LIST_MARGIN,
             clientRect.right - clientRect.left - LIST_MARGIN * 2,
-            clientRect.bottom - clientRect.top - (HEADER_HEIGHT + LIST_MARGIN) * listResizeCoeff,
+            clientRect.bottom - clientRect.top - (HEADER_HEIGHT + LIST_MARGIN) * 2,
             SWP_NOZORDER);
 
         pRenderTarget->Resize(size);
@@ -533,7 +572,7 @@ void MyApp::SetSubItems(int itemIndex, const wchar_t** texts, int count) {
     item.iItem = itemIndex;
 
     for (int i = 1; i < count; i++) { // Начинаем с 1, так как 0 уже установлен при вставке элемента
-        item.iSubItem = i;    
+        item.iSubItem = i;
         item.pszText = (wchar_t*)texts[i];
         ListView_SetItem(hMainList, &item);
     }
@@ -553,9 +592,9 @@ void MyApp::InsertItemWithSubItems(int itemIndex, const wchar_t** texts, int cou
     }
     else {
         MessageBox(
-            NULL, 
-            L"Failed to insert item into ListView", 
-            L"Error", 
+            NULL,
+            L"Failed to insert item into ListView",
+            L"Error",
             MB_OK | MB_ICONERROR);
     }
 }

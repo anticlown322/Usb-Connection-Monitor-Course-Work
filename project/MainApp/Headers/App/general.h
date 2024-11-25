@@ -4,7 +4,6 @@
 /* App */
 #include <stdlib.h>
 #include <exception>
-#include <fstream>
 #include <iostream>
 
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -25,6 +24,8 @@ enum class MENU_ID {
 
 /* Utility */
 #include <string>
+#include <format>
+#include <sstream> 
 #include <vector>
 
 template <class T> void SafeRelease(T** ppT)

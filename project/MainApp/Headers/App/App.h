@@ -50,6 +50,7 @@ private:
     /* fields */
     HWND handler;
     HFONT hHeaderFont;
+    int numOfDevices;
 
     //d2d1
     ID2D1Factory*             pFactory;
@@ -81,7 +82,7 @@ private:
     static const int HEADER_HEIGHT       = 50;
 
     static const int LIST_MARGIN = 1;
-    static const int NUM_OF_COLS = 10;
+    static const int NUM_OF_COLS = 19;
 };
 
 #endif // MY_APP_CLASS

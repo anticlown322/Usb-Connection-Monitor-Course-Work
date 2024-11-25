@@ -1,142 +1,210 @@
 #include "MainApp/Headers/App/general.h"
 #include "MainApp/Headers/Algs/UsbAlgs.h"
 
-std::vector<USBDeviceInfo> getUSBDevicesInformation()
+std::wstring GetRegistryStringValue(HKEY hKey, const std::wstring& valueName) {
+    DWORD type;
+    wchar_t value[256];
+    DWORD valueSize = sizeof(value);
+
+    if (RegQueryValueExW(
+        hKey, 
+        valueName.c_str(),
+        NULL, 
+        &type, 
+        (LPBYTE)value, 
+        &valueSize) == ERROR_SUCCESS) 
+    {
+        return value;
+    }
+
+    return L"Unknown";
+}
+
+std::wstring GetDeviceDescription(HKEY hKey) 
+{
+    std::wstring desc = GetRegistryStringValue(hKey, L"FriendlyName");
+
+    if (desc == L"Unknown")
+    {
+        desc = GetRegistryStringValue(hKey, L"DeviceDesc");
+    }
+
+    size_t pos = desc.rfind(L';');
+    if (pos != std::wstring::npos && pos + 1 < desc.length()) {
+        return desc.substr(pos + 1);
+    }
+    return L"Unknown";
+};
+
+std::wstring GetDeviceManufactoring(HKEY hKey)
+{
+    std::wstring manufactoring = GetRegistryStringValue(hKey, L"Mfg");
+    size_t startMarker = manufactoring.find(L'%');
+    size_t endMarker = manufactoring.find(L'%', startMarker + 1);
+
+    if (startMarker != std::wstring::npos && endMarker != std::wstring::npos) 
+    {
+        size_t semicolonPos = manufactoring.find(L';', endMarker + 1);
+        
+        if (semicolonPos != std::wstring::npos) 
+        {
+            size_t bracketPos = manufactoring.find(L'(', endMarker + 1);
+
+            if (bracketPos != std::wstring::npos)
+            {
+                endMarker = manufactoring.find(L')', bracketPos + 1);
+                return manufactoring.substr(bracketPos + 1, endMarker - (bracketPos + 1));
+            }
+
+            return manufactoring.substr(semicolonPos + 1);
+        }
+    }
+
+    return manufactoring;
+};
+
+bool IsDeviceConnected(HKEY hKey)
+{
+    std::wstring status = GetRegistryStringValue(hKey, L"ConfigFlags");
+    return status != L"1";
+}
+
+bool IsDeviceDisabled(HKEY hKey)
+{
+    std::wstring status = GetRegistryStringValue(hKey, L"ConfigFlags");
+    return status != L"1";
+}
+
+bool IsDeviceSafeToUnplug(HKEY hKey)
+{
+    std::wstring status = GetRegistryStringValue(hKey, L"ConfigFlags");
+    return status != L"1";
+}
+
+bool IsUsbHub(HKEY hKey)
+{
+    std::wstring status = GetRegistryStringValue(hKey, L"ConfigFlags");
+    return status != L"1";
+}
+
+std::wstring GetDeviceCapabilities(HKEY hKey)
+{
+    return L"";
+}
+
+std::vector<USBDeviceInfo> ListUSBDevices(const std::wstring& registryPath) 
 {
     std::vector<USBDeviceInfo> devices;
+    HKEY hKey;
 
-    HDEVINFO hDevInfo = SetupDiGetClassDevs(
-        NULL,
-        NULL,
-        NULL,
-        DIGCF_ALLCLASSES | DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
-
-    if (hDevInfo == INVALID_HANDLE_VALUE)
+    if (RegOpenKeyExW(
+        HKEY_LOCAL_MACHINE, 
+        registryPath.c_str(), 
+        0, 
+        KEY_READ, 
+        &hKey) != ERROR_SUCCESS) 
     {
-        std::cerr << "Failed to get device info set." << std::endl;
+        std::cerr << "Error: Unable to open registry key." << std::endl;
         return devices;
     }
 
-    SP_DEVINFO_DATA devInfoData;
-    devInfoData.cbSize = sizeof(SP_DEVINFO_DATA);
+    DWORD index = 0;
+    DWORD nameSize = 256;
+    wchar_t name[256];
 
-    for (DWORD i = 0; SetupDiEnumDeviceInfo(hDevInfo, i, &devInfoData); i++)
+    while(RegEnumKeyExW(
+        hKey, 
+        index, 
+        name, 
+        &nameSize, 
+        NULL, NULL, NULL, NULL) == ERROR_SUCCESS) 
     {
-        if (IsUSBDevice(hDevInfo, &devInfoData))
+        std::wstring deviceKeyPath = registryPath + L"\\" + name;
+        HKEY deviceKey;
+
+        if (RegOpenKeyExW(hKey, name, 0, KEY_READ, &deviceKey) == ERROR_SUCCESS) 
         {
-            USBDeviceInfo device;
-            DWORD buffersize = 0;
-            BYTE buffer[1024];
+            DWORD subIndex = 0;
+            DWORD subNameSize = 256;
+            wchar_t subName[256];
 
-            // getting device description
-            while (!SetupDiGetDeviceRegistryProperty(
-                hDevInfo,
-                &devInfoData,
-                SPDRP_DEVICEDESC,
-                NULL,
-                buffer,
-                sizeof(buffer),
-                &buffersize))
+            while (RegEnumKeyExW(
+                deviceKey, 
+                subIndex, 
+                subName, 
+                &subNameSize, 
+                NULL, NULL, NULL, NULL) == ERROR_SUCCESS) 
             {
-                if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-                    // buffer size is enough. just repeat the call
+                std::wstring instanceKeyPath = deviceKeyPath + L"\\" + subName;
+                HKEY instanceKey;
+
+                if (RegOpenKeyExW(
+                    deviceKey, 
+                    subName, 
+                    0, 
+                    KEY_READ, 
+                    &instanceKey) == ERROR_SUCCESS) 
+                {
+                    USBDeviceInfo deviceInfo;
+
+                    /* basic info */
+                    deviceInfo.description = GetDeviceDescription(instanceKey);
+                    deviceInfo.manufactoring = GetDeviceManufactoring(instanceKey);
+                    deviceInfo.serviceName = GetRegistryStringValue(instanceKey, L"Service");
+
+                    /* drivers*/
+                    deviceInfo.driverFilename = L"";
+                    deviceInfo.driverVersion = L"";
+
+                    /* capabilities */
+                    deviceInfo.isConnected = IsDeviceConnected(instanceKey);
+                    deviceInfo.isDisabled = IsDeviceDisabled(instanceKey);
+                    deviceInfo.isSafeToUnplug = IsDeviceSafeToUnplug(instanceKey);
+                    deviceInfo.isUsbHub = IsUsbHub(instanceKey);
+                    deviceInfo.capabilities = GetDeviceCapabilities(instanceKey);
+
+                    /* location */
+                    deviceInfo.location = GetRegistryStringValue(instanceKey, L"LocationInformation");
+
+                    /* manufactoring info */
+                    deviceInfo.serialNumber = L"";
+                    deviceInfo.usbClass = L"";
+                    deviceInfo.usbSubclass = L"";
+                    deviceInfo.usbProtocol = L"";
+
+                    /* IDS*/
+                    deviceInfo.id = std::wstring(name) + L"\\" + subName;
+                    deviceInfo.hardwareID = GetRegistryStringValue(instanceKey, L"HardwareID");
+                    deviceInfo.devClassGUID = GetRegistryStringValue(instanceKey, L"ClassGUID");
+                    deviceInfo.parentIDPrefix = GetRegistryStringValue(instanceKey, L"ParentIdPrefix");
+                    
+                    devices.push_back(deviceInfo);
+                    RegCloseKey(instanceKey);
                 }
-                else {
-                    break; //if another error then stop
-                }
+
+                subIndex++;
+                subNameSize = 256;
             }
 
-            // getting device class GUID
-            SetupDiGetDeviceRegistryProperty(hDevInfo, &devInfoData, SPDRP_CLASSGUID, NULL, buffer, sizeof(buffer), NULL);
-            CLSIDFromString((LPCOLESTR)(wchar_t*)buffer, &device.deviceClassGUID);
-            device.deviceDescription = (wchar_t*)buffer;
-
-            // getting ID
-            TCHAR devID[MAX_DEVICE_ID_LEN];
-            if (CM_Get_Device_ID(devInfoData.DevInst, devID, MAX_DEVICE_ID_LEN, 0) == CR_SUCCESS) {
-                device.deviceID = devID;
-            }
-
-            // getting Hardware ID (for more detailed info)
-            SetupDiGetDeviceRegistryProperty(hDevInfo, &devInfoData, SPDRP_HARDWAREID, NULL, buffer, sizeof(buffer), NULL);
-            device.hardwareID = (wchar_t*)buffer;
-
-            // getting device class
-            SetupDiGetDeviceRegistryProperty(hDevInfo, &devInfoData, SPDRP_CLASS, NULL, buffer, sizeof(buffer), NULL);
-            device.deviceClass = (wchar_t*)buffer;
-
-            // getting device status
-            ULONG status = 0;
-            ULONG problemNumber = 0;
-            if (CM_Get_DevNode_Status(&status, &problemNumber, devInfoData.DevInst, 0) == CR_SUCCESS) {
-                device.isConnected = (status & DN_DRIVER_LOADED) && (status & DN_STARTED) && !(status & DN_HAS_PROBLEM);
-                device.isDisabled = (status & DN_HAS_PROBLEM) && (problemNumber == CM_PROB_DISABLED);
-            }
-            else {
-                device.isConnected = false;
-                device.isDisabled = false;
-            }
-
-            devices.push_back(device);
+            RegCloseKey(deviceKey);
         }
+
+        index++;
+        nameSize = 256;
     }
 
-    SetupDiDestroyDeviceInfoList(hDevInfo);
-
+    RegCloseKey(hKey);
     return devices;
 }
 
-bool IsUSBDevice(HDEVINFO hDevInfo, PSP_DEVINFO_DATA pDeviceInfoData) 
+std::vector<USBDeviceInfo> GetAllUsbDevices()
 {
-    SP_DEVICE_INTERFACE_DATA interfaceData;
-    interfaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
+    std::vector<USBDeviceInfo> usbDevices = ListUSBDevices(L"SYSTEM\\CurrentControlSet\\Enum\\USB");
+    std::vector<USBDeviceInfo> usbPrintDevices = ListUSBDevices(L"SYSTEM\\CurrentControlSet\\Enum\\USBPRINT");
+    std::vector<USBDeviceInfo> usbStorDevices = ListUSBDevices(L"SYSTEM\\CurrentControlSet\\Enum\\USBSTOR");
 
-    // Перебор интерфейсов
-    for (
-        DWORD dwIndex = 0; 
-        SetupDiEnumDeviceInterfaces(
-            hDevInfo, 
-            pDeviceInfoData, 
-            &GUID_DEVINTERFACE_USB_DEVICE, 
-            dwIndex, 
-            &interfaceData); 
-        dwIndex++) 
-    {
-        DWORD requiredSize = 0;
-        PSP_DEVICE_INTERFACE_DETAIL_DATA pInterfaceDetail = NULL;
+    usbDevices.insert(usbDevices.end(), usbPrintDevices.begin(), usbPrintDevices.end());
+    usbDevices.insert(usbDevices.end(), usbStorDevices.begin(), usbStorDevices.end());
 
-        SetupDiGetDeviceInterfaceDetail(
-            hDevInfo, 
-            &interfaceData, 
-            NULL, 
-            0, 
-            &requiredSize, 
-            NULL);
-
-        pInterfaceDetail = (PSP_DEVICE_INTERFACE_DETAIL_DATA)LocalAlloc(LMEM_FIXED, requiredSize);
-        if (pInterfaceDetail == NULL) 
-        {
-            std::cerr << "Failed to allocate memory." << std::endl;
-            return false;
-        }
-
-        pInterfaceDetail->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
-
-        // Получаем детали интерфейса
-        if (SetupDiGetDeviceInterfaceDetail(
-            hDevInfo, 
-            &interfaceData, 
-            pInterfaceDetail, 
-            requiredSize, 
-            NULL, 
-            NULL)) 
-        {
-            LocalFree(pInterfaceDetail);
-            return true;
-        }
-
-        LocalFree(pInterfaceDetail);
-    }
-
-    return false; 
+    return usbDevices;
 }
