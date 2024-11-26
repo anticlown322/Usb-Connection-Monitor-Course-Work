@@ -189,7 +189,6 @@ void MyApp::InitMainList()
 
     const wchar_t* columnHeaders[NUM_OF_COLS] = {
         L"Описание", L"Mfg", L"Служба",
-        L"Файл драйвера", L"Версия драйвера",
         L"Подключен", L"Запрещен", L"Безопасно извлекать", L"USB хаб", L"Возможности",
         L"Расположение",
         L"Серийный номер", L"USB класс", L"USB подкласс", L"USB протокол",
@@ -218,10 +217,6 @@ void MyApp::InitMainList()
         descriptions[DEV_INFO::DESC] = device.description.c_str();
         descriptions[DEV_INFO::MFG] = device.manufactoring.c_str();
         descriptions[DEV_INFO::SERVICE] = device.serviceName.c_str();
-
-        //driver
-        descriptions[DEV_INFO::DRIVER_FILE] = device.driverFilename.c_str();
-        descriptions[DEV_INFO::DRIVER_VERSION] = device.driverVersion.c_str();
 
         //capabilities
         descriptions[DEV_INFO::IS_CONNECTED] = device.isConnected ? L"Да" : L"Нет";

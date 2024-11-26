@@ -45,71 +45,60 @@ std::wstring GetDeviceManufactoring(HKEY hKey)
     return manufactoring;
 }
 
-/*drivers*/
-std::wstring  GetDriverFileName(PCWSTR deviceInstanceId) 
+/* status */
+
+void getDevicesStatus(std::vector<USBDeviceInfo> &devices)
 {
-    //std::wstring driverFileName = L"";
+    HDEVINFO deviceInfoSet;
+    SP_DEVINFO_DATA deviceInfoData;
+    DWORD index = 0;
 
-    //HDEVINFO deviceInfoSet = SetupDiGetClassDevs(NULL, NULL, NULL, DIGCF_ALLCLASSES | DIGCF_PRESENT);
-    //if (deviceInfoSet == INVALID_HANDLE_VALUE) 
-    //{
-    //    return L"Unknown";
-    //}
+    deviceInfoSet = SetupDiGetClassDevs(NULL, L"USB", NULL, DIGCF_PRESENT | DIGCF_ALLCLASSES);
+    if (deviceInfoSet == INVALID_HANDLE_VALUE) 
+    {
+        std::cerr << "Can't get USB devices list" << std::endl;
+    }
 
-    //SP_DEVINFO_DATA deviceInfoData;
-    //deviceInfoData.cbSize = sizeof(SP_DEVINFO_DATA);
-    //for (DWORD i = 0; SetupDiEnumDeviceInfo(deviceInfoSet, i, &deviceInfoData); i++) 
-    //{
-    //    WCHAR devId[MAX_DEVICE_ID_LEN];
-    //    if (CM_Get_Device_ID(deviceInfoData.DevInst, devId, MAX_DEVICE_ID_LEN, 0) == CR_SUCCESS) 
-    //    {
-    //        if (_wcsicmp(devId, deviceInstanceId) == 0) 
-    //        {
-    //            DWORD propertyRegDataType;
-    //            BYTE propertyBuffer[1024];
-    //            if (SetupDiGetDeviceRegistryProperty(
-    //                deviceInfoSet, 
-    //                &deviceInfoData, 
-    //                SPDRP_DRIVER,
-    //                &propertyRegDataType, 
-    //                (PBYTE)propertyBuffer, 
-    //                sizeof(propertyBuffer), 
-    //                NULL)) 
-    //            {
-    //                WCHAR* driverPath = (WCHAR*)propertyBuffer;
-    //                
-    //            }
-    //        }
-    //    }
-    //}
+    deviceInfoData.cbSize = sizeof(SP_DEVINFO_DATA);
+    while (SetupDiEnumDeviceInfo(
+        deviceInfoSet, 
+        index, 
+        &deviceInfoData)) 
+    {
+        index++;
 
-    //SetupDiDestroyDeviceInfoList(deviceInfoSet);
-    //return L"Unknown";
+        TCHAR deviceName[256];
+        DWORD status, problemCode;
+
+        for (int i = 0; i < devices.size(); i++)
+        {
+            GUID devGuid;
+            HRESULT hResult = CLSIDFromString(devices[i].devClassGUID.c_str(), &devGuid);
+
+            if(SUCCEEDED(hResult) && deviceInfoData.ClassGuid == devGuid)
+                if (CM_Get_DevNode_Status(
+                    &status,
+                    &problemCode,
+                    deviceInfoData.DevInst,
+                    0) == CR_SUCCESS)
+                {
+                    devices[i].isConnected = !(status & DN_HAS_PROBLEM);
+                    devices[i].isDisabled = status & DN_DRIVER_BLOCKED; 
+                    devices[i].isSafeToUnplug = status & DN_REMOVABLE;
+                }
+                else
+                {
+                    devices[i].isConnected = false;
+                    devices[i].isDisabled = false;
+                    devices[i].isSafeToUnplug = true;
+                }
+        }
+    }
+
+    SetupDiDestroyDeviceInfoList(deviceInfoSet);
 }
 
-std::wstring GetDeviceDriverVersion(HKEY hKey)
-{
-    return std::wstring();
-}
-
-/* status and capabilities */
-bool IsDeviceConnected(HKEY hKey)
-{
-    DWORD status = GetRegistryDWORDValue(hKey, L"ConfigFlags");
-    return status == 1;
-}
-
-bool IsDeviceDisabled(HKEY hKey)
-{
-    DWORD status = GetRegistryDWORDValue(hKey, L"ConfigFlags");
-    return status == 1;
-}
-
-bool IsDeviceSafeToUnplug(HKEY hKey)
-{
-    DWORD status = GetRegistryDWORDValue(hKey, L"ConfigFlags");
-    return status == 1;
-}
+/* status */
 
 std::wstring GetDeviceCapabilities(HKEY hKey)
 {
@@ -313,16 +302,14 @@ std::vector<USBDeviceInfo> ListUSBDevices(const std::wstring& registryPath)
                     deviceInfo.manufactoring = GetDeviceManufactoring(instanceKey);
                     deviceInfo.serviceName = GetRegistryStringValue(instanceKey, L"Service");
 
-                    /* drivers*/
-                    deviceInfo.driverFilename = GetDeviceDriverFilename(instanceKey);
-                    deviceInfo.driverVersion = GetDeviceDriverVersion(instanceKey);
-
                     /* capabilities */
-                    //deviceInfo.isConnected = IsDeviceConnected(instanceKey);
-                    //deviceInfo.isDisabled = IsDeviceDisabled(instanceKey);
-                    //deviceInfo.isSafeToUnplug = IsDeviceSafeToUnplug(instanceKey);
                     deviceInfo.isUsbHub = deviceInfo.serviceName == L"USBHUB3";
                     deviceInfo.capabilities = GetDeviceCapabilities(instanceKey);
+
+                    /* preparation for status gathering */
+                    deviceInfo.isConnected = false;
+                    deviceInfo.isDisabled = false;
+                    deviceInfo.isSafeToUnplug = true;
 
                     /* location */
                     deviceInfo.location = GetRegistryStringValue(instanceKey, L"LocationInformation");
@@ -355,6 +342,10 @@ std::vector<USBDeviceInfo> ListUSBDevices(const std::wstring& registryPath)
     }
 
     RegCloseKey(hKey);
+
+    /* status */
+    getDevicesStatus(devices);
+
     return devices;
 }
 
