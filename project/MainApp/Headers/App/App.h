@@ -37,6 +37,7 @@ private:
     void OnLBtnDown();
     void OnCommand(WPARAM menuId);
     void OnDestroy();
+    void OnDeviceChange();
 
     //list
     void FillMainList();
