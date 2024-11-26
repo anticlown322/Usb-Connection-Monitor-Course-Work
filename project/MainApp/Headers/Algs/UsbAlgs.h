@@ -6,9 +6,6 @@ enum DEV_INFO : int {
     MFG,
     SERVICE,
 
-    DRIVER_FILE,
-    DRIVER_VERSION,
-
     IS_CONNECTED,
     IS_DIASBLED,
     IS_SAFE_TO_UNPLUG,
@@ -32,9 +29,6 @@ struct USBDeviceInfo {
     std::wstring description;
     std::wstring manufactoring;
     std::wstring serviceName;
-
-    std::wstring driverFilename;
-    std::wstring driverVersion;
 
     bool isConnected;
     bool isDisabled;
@@ -66,13 +60,7 @@ std::wstring GetDeviceDescription(HKEY hKey);
 std::wstring GetDeviceManufactoring(HKEY hKey);
 
 /* status */
-bool IsDeviceConnected(HKEY hKey);
-bool IsDeviceDisabled(HKEY hKey);
-bool IsDeviceSafeToUnplug(HKEY hKey);
-
-/* driver info */
-std::wstring GetDeviceDriverFilename(HKEY hKey);
-std::wstring GetDeviceDriverVersion(HKEY hKey);
+//void getDevicesStatus(std::vector<USBDeviceInfo> &devices);
 
 /* capabilities */
 std::wstring GetDeviceCapabilities(HKEY hKey);

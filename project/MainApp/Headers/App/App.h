@@ -82,7 +82,7 @@ private:
     static const int HEADER_HEIGHT       = 50;
 
     static const int LIST_MARGIN = 1;
-    static const int NUM_OF_COLS = 19;
+    static const int NUM_OF_COLS = 17;
 };
 
 #endif // MY_APP_CLASS
