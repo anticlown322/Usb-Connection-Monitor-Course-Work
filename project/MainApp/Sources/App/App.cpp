@@ -1,6 +1,5 @@
 #include "MainApp\Headers\App\general.h"
 #include "MainApp\Headers\App\App.h"
-#include "MainApp\Headers\Algs\UsbAlgs.h"
 
 #include "MainApp\Resources\resource.h"
 
@@ -12,6 +11,7 @@ MyApp::MyApp()
     {
         this->InitWindow();
         this->CreateControls();
+        this->InitMainList();
     }
     catch (const std::exception& exception)
     {
@@ -159,8 +159,14 @@ void MyApp::CreateControls()
         TOP_MENU_BTN_Y,
         TOP_MENU_BTN_RADIUS,
         darkGreenColor);
+}
 
-    /*list*/
+void MyApp::InitMainList()
+{
+    RECT clientRect;
+    GetClientRect(handler, &clientRect);
+
+    /* create list */
     hMainList = CreateWindow(
         WC_LISTVIEW,
         L"",
@@ -174,26 +180,10 @@ void MyApp::CreateControls()
         nullptr,
         nullptr);
 
-    InitMainList();
-}
-
-void MyApp::InitMainList()
-{
-    RECT clientRect;
-    GetClientRect(handler, &clientRect);
-
-    /* init columns */
+    /* init list columns */
     int colWidth = (clientRect.right - clientRect.top) / NUM_OF_COLS;
     LVCOLUMN column;
     column.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
-
-    const wchar_t* columnHeaders[NUM_OF_COLS] = {
-        L"Описание", L"Mfg", L"Служба",
-        L"Подключен", L"Запрещен", L"Безопасно извлекать", L"USB хаб", L"Возможности",
-        L"Расположение",
-        L"Серийный номер", L"USB класс", L"USB подкласс", L"USB протокол",
-        L"ID", L"Классовый GUID", L"Hardware ID", L"Префикс родительского ID",
-    };
 
     for (int iCol = 0; iCol < NUM_OF_COLS; iCol++)
     {
@@ -204,45 +194,10 @@ void MyApp::InitMainList()
         SendMessage(hMainList, LVM_INSERTCOLUMN, (WPARAM)iCol, (LPARAM)&column);
     }
 
-    /* init items */
-    std::vector<USBDeviceInfo> deviceInfos = GetAllUsbDevices();
-    numOfDevices = deviceInfos.size();
-
-    int deviceIndex = 0;
-    for (USBDeviceInfo device : deviceInfos)
-    {
-        const wchar_t** descriptions = new const wchar_t* [NUM_OF_COLS];
-
-        //info
-        descriptions[DEV_INFO::DESC] = device.description.c_str();
-        descriptions[DEV_INFO::MFG] = device.manufactoring.c_str();
-        descriptions[DEV_INFO::SERVICE] = device.serviceName.c_str();
-
-        //capabilities
-        descriptions[DEV_INFO::IS_CONNECTED] = device.isConnected ? L"Да" : L"Нет";
-        descriptions[DEV_INFO::IS_DIASBLED] = device.isDisabled ? L"Да" : L"Нет";
-        descriptions[DEV_INFO::IS_SAFE_TO_UNPLUG] = device.isSafeToUnplug ? L"Да" : L"Нет";
-        descriptions[DEV_INFO::IS_USB_HUB] = device.isUsbHub ? L"Да" : L"Нет";
-        descriptions[DEV_INFO::CAPABILITIES] = device.capabilities.c_str();
-
-        //location
-        descriptions[DEV_INFO::LOCATION] = device.location.c_str();
-
-        //addintional info
-        descriptions[DEV_INFO::SERIAL_NUM] = device.serialNumber.c_str();
-        descriptions[DEV_INFO::USB_CLASS] = device.usbClass.c_str();
-        descriptions[DEV_INFO::USB_SUBCLASS] = device.usbSubclass.c_str();
-        descriptions[DEV_INFO::USB_PROTOCOL] = device.usbProtocol.c_str();
-
-        //ids
-        descriptions[DEV_INFO::ID] = device.id.c_str();
-        descriptions[DEV_INFO::DEV_GUID] = device.devClassGUID.c_str();
-        descriptions[DEV_INFO::HARDWARE_ID] = device.hardwareID.c_str();
-        descriptions[DEV_INFO::PARENT_PREFIX] = device.parentIDPrefix.c_str();
-
-        InsertItemWithSubItems(deviceIndex, descriptions, NUM_OF_COLS);
-        deviceIndex++;
-    }
+    /* add items to the list */
+    this->deviceInfos = GetAllUsbDevices();
+    FillMainList();
+    UpdateColumnsWidths();
 }
 
 /* Logic */
@@ -561,6 +516,50 @@ void MyApp::OnDestroy()
 
 //list
 
+void MyApp::FillMainList()
+{
+    /* init items */
+    numOfDevices = deviceInfos.size();
+    int deviceIndex = 0;
+
+    for (USBDeviceInfo device : deviceInfos)
+    {
+        const wchar_t** descriptions = new const wchar_t* [NUM_OF_COLS];
+
+        //info
+        descriptions[DEV_INFO::DESC] = device.description.c_str();
+        descriptions[DEV_INFO::MFG] = device.manufactoring.c_str();
+        descriptions[DEV_INFO::SERVICE] = device.serviceName.c_str();
+
+        //status
+        descriptions[DEV_INFO::IS_CONNECTED] = device.isConnected ? L"Да" : L"Нет";
+        descriptions[DEV_INFO::IS_DIASBLED] = device.isDisabled ? L"Да" : L"Нет";
+        descriptions[DEV_INFO::IS_SAFE_TO_UNPLUG] = device.isSafeToUnplug ? L"Да" : L"Нет";
+
+        //capabilities
+        descriptions[DEV_INFO::IS_USB_HUB] = device.isUsbHub ? L"Да" : L"Нет";
+        descriptions[DEV_INFO::CAPABILITIES] = device.capabilities.c_str();
+
+        //location
+        descriptions[DEV_INFO::LOCATION] = device.location.c_str();
+
+        //addintional info
+        descriptions[DEV_INFO::SERIAL_NUM] = device.serialNumber.c_str();
+        descriptions[DEV_INFO::USB_CLASS] = device.usbClass.c_str();
+        descriptions[DEV_INFO::USB_SUBCLASS] = device.usbSubclass.c_str();
+        descriptions[DEV_INFO::USB_PROTOCOL] = device.usbProtocol.c_str();
+
+        //ids
+        descriptions[DEV_INFO::ID] = device.id.c_str();
+        descriptions[DEV_INFO::DEV_GUID] = device.devClassGUID.c_str();
+        descriptions[DEV_INFO::HARDWARE_ID] = device.hardwareID.c_str();
+        descriptions[DEV_INFO::PARENT_PREFIX] = device.parentIDPrefix.c_str();
+
+        InsertItemWithSubItems(deviceIndex, descriptions, NUM_OF_COLS);
+        deviceIndex++;
+    }
+}
+
 void MyApp::SetSubItems(int itemIndex, const wchar_t** texts, int count) {
     LVITEM item;
     item.mask = LVIF_TEXT;
@@ -591,6 +590,56 @@ void MyApp::InsertItemWithSubItems(int itemIndex, const wchar_t** texts, int cou
             L"Failed to insert item into ListView",
             L"Error",
             MB_OK | MB_ICONERROR);
+    }
+}
+
+void MyApp::UpdateColumnsWidths()
+{
+    for (int iCol = 0; iCol < NUM_OF_COLS; iCol++)
+    {
+        int maxWidth = 0;
+        int textWidth = 0;
+
+        if (DEV_INFO::IS_CONNECTED == iCol ||
+            DEV_INFO::IS_DIASBLED == iCol ||
+            DEV_INFO::IS_SAFE_TO_UNPLUG == iCol ||
+            DEV_INFO::IS_USB_HUB == iCol ||
+            DEV_INFO::USB_CLASS == iCol ||
+            DEV_INFO::USB_SUBCLASS == iCol ||
+            DEV_INFO::USB_PROTOCOL == iCol)
+        {
+            maxWidth = 30;
+        }
+        else
+            for (USBDeviceInfo device : deviceInfos)
+            {
+                switch (iCol)
+                {
+                    case DEV_INFO::DESC: textWidth = ListView_GetStringWidth(hMainList, device.description.c_str()); break;
+                    case DEV_INFO::MFG: textWidth = ListView_GetStringWidth(hMainList, device.manufactoring.c_str()); break;
+                    case DEV_INFO::SERVICE: textWidth = ListView_GetStringWidth(hMainList, device.serviceName.c_str()); break;
+
+                    case DEV_INFO::CAPABILITIES: textWidth = ListView_GetStringWidth(hMainList, device.capabilities.c_str()); break;
+                
+                    case DEV_INFO::LOCATION: textWidth = ListView_GetStringWidth(hMainList, device.location.c_str()); break;
+
+                    case DEV_INFO::SERIAL_NUM: textWidth = ListView_GetStringWidth(hMainList, device.serialNumber.c_str()); break;
+
+                    case DEV_INFO::ID: textWidth = ListView_GetStringWidth(hMainList, device.id.c_str()); break;
+                    case DEV_INFO::DEV_GUID: textWidth = ListView_GetStringWidth(hMainList, device.devClassGUID.c_str()); break;
+                    case DEV_INFO::HARDWARE_ID: textWidth = ListView_GetStringWidth(hMainList, device.hardwareID.c_str()); break;
+                    case DEV_INFO::PARENT_PREFIX: textWidth = ListView_GetStringWidth(hMainList, device.parentIDPrefix.c_str()); break;
+                }
+
+                if (textWidth > maxWidth)
+                    maxWidth = textWidth;
+            }
+
+        int columnHeaderLen = ListView_GetStringWidth(hMainList, columnHeaders[iCol]);
+        if (columnHeaderLen > maxWidth)
+            maxWidth = columnHeaderLen + 20;
+
+        ListView_SetColumnWidth(hMainList, iCol, maxWidth + 20);
     }
 }
 

@@ -1,6 +1,7 @@
 #ifndef MY_APP_CLASS
 #define MY_APP_CLASS
 
+#include "MainApp\Headers\Algs\UsbAlgs.h"
 #include "MainApp\Headers\Components\myCircleButton.h"
 
 class MyApp
@@ -38,8 +39,10 @@ private:
     void OnDestroy();
 
     //list
+    void FillMainList();
     void SetSubItems(int itemIndex, const wchar_t** texts, int count);
     void InsertItemWithSubItems(int itemIndex, const wchar_t** texts, int count);
+    void UpdateColumnsWidths();
 
     //finalization
     void DiscradControls();
@@ -69,6 +72,7 @@ private:
     MyCircleButton* minimizeButton;
     MyCircleButton* maximizeButton;
     HWND hMainList;
+    std::vector<USBDeviceInfo> deviceInfos;
 
     //utility
     double wndScalingCoef_X;
@@ -83,6 +87,14 @@ private:
 
     static const int LIST_MARGIN = 1;
     static const int NUM_OF_COLS = 17;
+
+    const wchar_t* columnHeaders[NUM_OF_COLS] = {
+    L"Описание", L"Mfg", L"Служба",
+    L"Подключен", L"Запрещен", L"Безопасно извлекать", L"USB хаб", L"Возможности",
+    L"Расположение",
+    L"Серийный номер", L"USB класс", L"USB подкласс", L"USB протокол",
+    L"ID", L"Классовый GUID", L"Hardware ID", L"Префикс родительского ID",
+    };
 };
 
 #endif // MY_APP_CLASS
