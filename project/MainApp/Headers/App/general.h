@@ -27,6 +27,7 @@ enum class MENU_ID {
 #include <format>
 #include <sstream> 
 #include <vector>
+#include <regex>
 
 template <class T> void SafeRelease(T** ppT)
 {
@@ -54,5 +55,6 @@ template <class T> void SafeRelease(T** ppT)
 #include <devpkey.h>
 #include <setupapi.h> 
 #include <cfgmgr32.h> 
+
 
 #endif // GENERAL_H
