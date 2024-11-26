@@ -229,6 +229,10 @@ LRESULT MyApp::WndProc(UINT message, WPARAM wParam, LPARAM lParam)
             OnCommand(wParam);
             return 0;
 
+        case WM_DEVICECHANGE:
+            OnDeviceChange();
+            return 0;
+
         default:
             return DefWindowProc(handler, message, wParam, lParam);
     }
@@ -512,6 +516,13 @@ void MyApp::OnDestroy()
     SafeRelease(&pDWriteFactory);
 
     PostQuitMessage(0);
+}
+
+void MyApp::OnDeviceChange()
+{
+    deviceInfos = GetAllUsbDevices();
+    FillMainList();
+    UpdateColumnsWidths();
 }
 
 //list
