@@ -55,6 +55,7 @@ template <class T> void SafeRelease(T** ppT)
 #include <devpkey.h>
 #include <setupapi.h> 
 #include <cfgmgr32.h> 
+#include <thread>
 
 
 #endif // GENERAL_H

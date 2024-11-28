@@ -28,6 +28,7 @@ private:
     void InitMainList();
 
     //logic
+    //main window
     LRESULT CALLBACK WndProc(UINT message, WPARAM wParam, LPARAM lParam);
     HRESULT CreateGraphicsResources();
 
@@ -52,9 +53,9 @@ private:
     /* static funcs */
 
     /* fields */
-    HWND handler;
+    HWND  handler;
     HFONT hHeaderFont;
-    int numOfDevices;
+    int   numOfDevices;
 
     //d2d1
     ID2D1Factory*             pFactory;

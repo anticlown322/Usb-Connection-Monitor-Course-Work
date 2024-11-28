@@ -3,6 +3,10 @@
 
 #include "MainApp\Resources\resource.h"
 
+/* prototypes for non class funcs */
+
+void WatchRegistryKey(HKEY hKey, LPCWSTR subKey, HWND hMainApp);
+
 /* Startup code */
 
 MyApp::MyApp()
@@ -196,11 +200,64 @@ void MyApp::InitMainList()
 
     /* add items to the list */
     this->deviceInfos = GetAllUsbDevices();
+    ListView_DeleteAllItems(hMainList);
     FillMainList();
     UpdateColumnsWidths();
 }
 
 /* Logic */
+
+//windows register
+
+void WatchRegistryKey(HKEY hKey, LPCWSTR subKey, HWND hMainApp)
+{
+    HKEY key;
+    HANDLE hChange;
+
+    if (RegOpenKeyEx(hKey, subKey, 0, KEY_NOTIFY, &key) != ERROR_SUCCESS)
+    {
+        std::wcerr << L"Failed to open registry key." << std::endl;
+        return;
+    }
+
+    hChange = CreateEvent(NULL, TRUE, FALSE, NULL);
+    if (hChange == NULL)
+    {
+        std::wcerr << L"Failed to create event." << std::endl;
+        RegCloseKey(key);
+        return;
+    }
+
+    while (true)
+    {
+        if (RegNotifyChangeKeyValue(key, TRUE, REG_NOTIFY_CHANGE_NAME | REG_NOTIFY_CHANGE_LAST_SET, hChange, TRUE) != ERROR_SUCCESS)
+        {
+            std::wcerr << L"Failed to set registry notification." << std::endl;
+            break;
+        }
+
+        DWORD result = WaitForSingleObject(hChange, 1000);
+
+        if (result == WAIT_OBJECT_0)
+        {
+            SendMessage(hMainApp, WM_DEVICECHANGE, NULL, NULL);
+        }
+        else if (result == WAIT_TIMEOUT)
+        {
+            //do nothing or something
+        }
+        else
+        {
+            std::wcerr << L"Error in waiting for registry change." << std::endl;
+            break;
+        }
+    }
+
+    CloseHandle(hChange);
+    RegCloseKey(key);
+}
+
+//main window
 
 LRESULT MyApp::WndProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -340,6 +397,9 @@ int MyApp::OnCreate()
 
     isMaximized = false;
     numOfDevices = 0;
+
+    std::thread registryWatcher(WatchRegistryKey, HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Enum", handler);
+    registryWatcher.detach();
 
     return 0;
 }
@@ -521,6 +581,7 @@ void MyApp::OnDestroy()
 void MyApp::OnDeviceChange()
 {
     deviceInfos = GetAllUsbDevices();
+    ListView_DeleteAllItems(hMainList);
     FillMainList();
     UpdateColumnsWidths();
 }
