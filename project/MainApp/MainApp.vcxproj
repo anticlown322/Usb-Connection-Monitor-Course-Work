@@ -139,17 +139,19 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Sources\Algs\SortAlgs.cpp" />
     <ClCompile Include="Sources\App\App.cpp" />
     <ClCompile Include="Entry.cpp" />
-    <ClCompile Include="Sources\Components\myCircleButton.cpp" />
+    <ClCompile Include="Sources\Components\MyCircleButton.cpp" />
     <ClCompile Include="Sources\Algs\UsbAlgs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\App\App.h" />
-    <ClInclude Include="Headers\App\general.h" />
-    <ClInclude Include="Headers\Components\myCircleButton.h" />
+    <ClInclude Include="Headers\App\General.h" />
+    <ClInclude Include="Headers\Components\MyCircleButton.h" />
     <ClInclude Include="Resources\resource.h" />
     <ClInclude Include="Headers\Algs\UsbAlgs.h" />
+    <ClInclude Include="Headers\Algs\SortAlgs.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources\MainApp.rc" />

@@ -1,4 +1,4 @@
-#include "MainApp/Headers/App/general.h"
+#include "MainApp/Headers/App/General.h"
 #include "MainApp/Headers/Algs/UsbAlgs.h"
 
 /* basic info */
@@ -67,7 +67,6 @@ void getDevicesStatus(std::vector<USBDeviceInfo> &devices)
     {
         index++;
 
-        TCHAR deviceName[256];
         DWORD status, problemCode;
 
         for (int i = 0; i < devices.size(); i++)

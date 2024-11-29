@@ -1,5 +1,6 @@
-#include "MainApp\Headers\App\general.h"
+#include "MainApp\Headers\App\General.h"
 #include "MainApp\Headers\App\App.h"
+#include "MainApp\Headers\Algs\SortAlgs.h"
 
 #include "MainApp\Resources\resource.h"
 
@@ -163,14 +164,8 @@ void MyApp::CreateControls()
         TOP_MENU_BTN_Y,
         TOP_MENU_BTN_RADIUS,
         darkGreenColor);
-}
 
-void MyApp::InitMainList()
-{
-    RECT clientRect;
-    GetClientRect(handler, &clientRect);
-
-    /* create list */
+    /* main list */
     hMainList = CreateWindow(
         WC_LISTVIEW,
         L"",
@@ -183,6 +178,12 @@ void MyApp::InitMainList()
         (HMENU)MENU_ID::MAIN_LIST,
         nullptr,
         nullptr);
+}
+
+void MyApp::InitMainList()
+{
+    RECT clientRect;
+    GetClientRect(handler, &clientRect);
 
     /* init list columns */
     int colWidth = (clientRect.right - clientRect.top) / NUM_OF_COLS;
@@ -203,6 +204,7 @@ void MyApp::InitMainList()
     ListView_DeleteAllItems(hMainList);
     FillMainList();
     UpdateColumnsWidths();
+    InvalidateRect(handler, NULL, TRUE);
 }
 
 /* Logic */
@@ -289,6 +291,10 @@ LRESULT MyApp::WndProc(UINT message, WPARAM wParam, LPARAM lParam)
         case WM_DEVICECHANGE:
             OnDeviceChange();
             return 0;
+
+        case WM_NOTIFY:
+            OnNotify(lParam);
+            break;
 
         default:
             return DefWindowProc(handler, message, wParam, lParam);
@@ -584,6 +590,31 @@ void MyApp::OnDeviceChange()
     ListView_DeleteAllItems(hMainList);
     FillMainList();
     UpdateColumnsWidths();
+    InvalidateRect(handler, NULL, TRUE);
+}
+
+void MyApp::OnNotify(LPARAM lParam)
+{
+    LPNMHDR pnmh = (LPNMHDR)lParam;
+
+    if (pnmh->hwndFrom == ListView_GetHeader(hMainList)) 
+    {
+        switch (pnmh->code) 
+        {
+            case HDN_ITEMCLICK: 
+            {
+                LPNMHEADER phdr = (LPNMHEADER)lParam;
+                int clickedColumn = phdr->iItem;
+
+                MergeSortMultiThreaded(deviceInfos, MAX_THREADS, (DEV_INFO)clickedColumn);
+                ListView_DeleteAllItems(hMainList);
+                FillMainList();
+                UpdateColumnsWidths();
+                InvalidateRect(handler, NULL, TRUE);
+            }
+            break;
+        }
+    }
 }
 
 //list

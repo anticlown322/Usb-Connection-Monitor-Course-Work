@@ -1,7 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include "MainApp\Headers\App\general.h"
-#include "MainApp\Headers\Components\myCircleButton.h"
+#include "MainApp\Headers\App\General.h"
+#include "MainApp\Headers\Components\MyCircleButton.h"
 
 /* Startup code */
 
