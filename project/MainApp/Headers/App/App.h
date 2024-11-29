@@ -2,7 +2,7 @@
 #define MY_APP_CLASS
 
 #include "MainApp\Headers\Algs\UsbAlgs.h"
-#include "MainApp\Headers\Components\myCircleButton.h"
+#include "MainApp\Headers\Components\MyCircleButton.h"
 
 class MyApp
 {
@@ -39,6 +39,7 @@ private:
     void OnCommand(WPARAM menuId);
     void OnDestroy();
     void OnDeviceChange();
+    void OnNotify(LPARAM lParam);
 
     //list
     void FillMainList();
@@ -73,6 +74,7 @@ private:
     MyCircleButton* closeButton;
     MyCircleButton* minimizeButton;
     MyCircleButton* maximizeButton;
+
     HWND hMainList;
     std::vector<USBDeviceInfo> deviceInfos;
 
@@ -89,6 +91,8 @@ private:
 
     static const int LIST_MARGIN = 1;
     static const int NUM_OF_COLS = 17;
+
+    static const int MAX_THREADS = 4;
 
     const wchar_t* columnHeaders[NUM_OF_COLS] = {
     L"Описание", L"Mfg", L"Служба",

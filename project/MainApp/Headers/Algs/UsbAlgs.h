@@ -1,54 +1,6 @@
 #ifndef USB_ALGS
 #define USB_ALGS
 
-enum DEV_INFO : int {
-    DESC,
-    MFG,
-    SERVICE,
-
-    IS_CONNECTED,
-    IS_DIASBLED,
-    IS_SAFE_TO_UNPLUG,
-    IS_USB_HUB,
-    CAPABILITIES,
-
-    LOCATION,
-
-    SERIAL_NUM,
-    USB_CLASS,
-    USB_SUBCLASS,
-    USB_PROTOCOL,
-
-    ID,
-    DEV_GUID,
-    HARDWARE_ID,
-    PARENT_PREFIX
-};
-
-struct USBDeviceInfo {
-    std::wstring description;
-    std::wstring manufactoring;
-    std::wstring serviceName;
-
-    bool isConnected;
-    bool isDisabled;
-    bool isSafeToUnplug;
-    bool isUsbHub;
-    std::wstring capabilities;
-
-    std::wstring location;
-    
-    std::wstring serialNumber;
-    std::wstring usbClass;
-    std::wstring usbSubclass;
-    std::wstring usbProtocol;
-    
-    std::wstring id;
-    std::wstring devClassGUID;
-    std::wstring hardwareID;
-    std::wstring parentIDPrefix;
-};
-
 /* common */
 std::wstring GetRegistryStringValue(HKEY hKey, const std::wstring& valueName);
 DWORD GetRegistryDWORDValue(HKEY hKey, const std::wstring& valueName);
